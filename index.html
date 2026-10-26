@@ -1648,6 +1648,7 @@ function showDiagCard(r){
   txt += "\nМодель: " + (state.vars.model || "______");
   txt += "  Возраст: " + (state.vars.age ? state.vars.age + " лет" : "______");
   txt += "  Компрессоров: " + (state.vars.compressor === "1" ? "один" : state.vars.compressor === "2" ? "два" : "неизвестно");
+  txt += "  Управление: " + (state.vars.control === "electronic" ? "электронное" : state.vars.control === "mechanic" ? "механическое" : "неизвестно");
   const wrap = el("<div></div>");
   wrap.appendChild(el('<div class="res-intro"><strong>📋 Карточка диагностики</strong><br>Скопируйте в заявку, журнал или переписку.</div>'));
   wrap.appendChild(el('<div class="summary-box"></div>'));
@@ -1748,9 +1749,94 @@ function runIntake(){
       state.vars.model = v || "не указана";
       askText("Сколько лет холодильнику?", null, function(a){
         state.vars.age = a || "не указан";
-        askCompressors();
+        askControlType();
       });
     });
+}
+
+/* определение типа управления по модели и возрасту */
+function classifyControl(model, age){
+  const m = String(model || "").toLowerCase().replace(/ё/g,"е");
+  const a = parseFloat(age);
+  const hasAge = !isNaN(a) && age !== "не указан";
+  function R(guess, note){ return {guess:guess, note:note}; }
+  if(/samsung|самсунг/.test(m)) return R("e","практически все Samsung — электронное управление");
+  if(/liebherr|либхер/.test(m)) return R("e","Liebherr — как правило, электронное");
+  if(/haier|хайер|хайэр/.test(m)) return R("e","Haier — электронное");
+  if(/schaub ?lorenz|шауб/.test(m)) return R("e","Schaub Lorenz — электронное");
+  if(/(^|[^a-zа-я])lg([^a-zа-я]|$)|элджи/.test(m)) return R("e","LG — электронное");
+  if(/atlant|атлант|минск/.test(m)){
+    if(/ноу ?фрост|no ?frost|nofrost|[хx][мm][\s\-]*[0-9]/.test(m)) return R("e","Атлант No Frost с дисплеем — электронное");
+    return R("m","большинство Атлантов — механика (МХМ, поворотные термостаты); если это No Frost с дисплеем — поправьте кнопкой ниже");
+  }
+  if(/stinol|стинол/.test(m)) return R("m","Stinol — в основном механика");
+  if(/indesit|индезит|ariston|аристон/.test(m)){
+    if(hasAge && a <= 18) return R("e","Indesit/Ariston платформы 2005 года и новее — электронное");
+    if(hasAge) return R("m","старые Indesit/Ariston — механика");
+    return R(null,"Indesit/Ariston: техника моложе ~18 лет — обычно электроника, старше — механика");
+  }
+  if(/sharp|шарп/.test(m)){
+    if(hasAge && a >= 15) return R("m","старые Sharp — механика");
+    if(hasAge) return R("e","современные Sharp — электроника");
+    return R(null,"Sharp: старше 15 лет — обычно механика, новее — электроника");
+  }
+  if(/bosch|бош|siemens|сименс|neff|нефф/.test(m)){
+    if(hasAge && a >= 18) return R("m","старые Bosch/Siemens — механика");
+    if(hasAge) return R("e","современные Bosch/Siemens — электроника");
+    return R(null,"Bosch/Siemens: старше ~18 лет — обычно механика, новее — электроника");
+  }
+  if(/vestfrost|вестфрост|vestel|вестел/.test(m)) return R("e","Vestfrost/Vestel — как правило, электроника");
+  if(/beko|беко/.test(m)) return R(null,"Beko встречается и с механикой, и с электроникой");
+  if(/gorenje|горенье/.test(m)) return R(null,"Gorenje встречается и с механикой, и с электроникой");
+  if(/whirlpool|вирпул|electrolux|электролюкс|zanussi|занусси|aeg/.test(m)) return R(null,"у этого бренда бывают оба варианта");
+  if(hasAge && a <= 10) return R(null,"по возрасту (до 10 лет) скорее электронное — подтвердите");
+  if(hasAge && a >= 20) return R(null,"по возрасту (20+ лет) скорее механика — подтвердите");
+  return R(null,"");
+}
+
+let intakeTok = 0;
+function askControlType(){
+  const cl = classifyControl(state.vars.model, state.vars.age);
+  if(cl.guess){
+    state.vars.control = cl.guess === "e" ? "electronic" : "mechanic";
+    const label = cl.guess === "e" ? "электронное управление" : "механическое управление";
+    const wrap = el("<div></div>");
+    wrap.appendChild(el("<div><strong>Определил по базе: "+label+"</strong><br>"+esc(cl.note)+".</div>"));
+    const chips = el('<div class="chips"></div>');
+    const fix = el('<button class="chip small">Это не так — уточнить</button>');
+    fix.onclick = function(){
+      intakeTok++;
+      disableChips(chips);
+      openControlQuestion();
+    };
+    chips.appendChild(fix);
+    wrap.appendChild(chips);
+    botSay(wrap, null, 350);
+    const tok = ++intakeTok;
+    setTimeout(function(){ if(tok === intakeTok) askCompressors(); }, 1500);
+  } else {
+    if(cl.note) botSay("По модели точно не скажу: "+esc(cl.note)+".", null, 300);
+    setTimeout(openControlQuestion, cl.note ? 800 : 200);
+  }
+}
+
+function openControlQuestion(){
+  const html = el("<div></div>");
+  html.appendChild(el('<div class="q">Управление у холодильника электронное или механическое?</div>'));
+  html.appendChild(el('<div class="hint">💡 Электронное — дисплей и/или кнопки, команды формирует модуль. Механическое — поворотная ручка термостата.</div>'));
+  const chips = el('<div class="chips"></div>');
+  [["Электронное","electronic"],["Механическое","mechanic"],["Не знаю","unknown"]].forEach(function(p){
+    const b = el('<button class="chip">'+p[0]+"</button>");
+    b.onclick = function(){
+      disableChips(chips);
+      addUser(p[0]);
+      state.vars.control = p[1];
+      askCompressors();
+    };
+    chips.appendChild(b);
+  });
+  html.appendChild(chips);
+  botSay(html);
 }
 
 function askCompressors(){
