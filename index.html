@@ -62,6 +62,10 @@
     font-size:13px; color:var(--muted); background:#f2f6fa;
     border-left:3px solid var(--blue); padding:8px 10px; border-radius:6px; margin-top:8px;
   }
+  .hint-red{
+    font-size:13px; color:#8f2226; background:#fdeaea;
+    border-left:3px solid var(--red); padding:8px 10px; border-radius:6px; margin-top:8px;
+  }
   .chips{display:flex; flex-wrap:wrap; gap:8px; margin-top:10px}
   .askform{display:flex; gap:8px; margin-top:10px}
   .askform input{
@@ -1716,7 +1720,7 @@ function startFlow(flowId, chips){
   state.flowId = flowId;
   state.symptom = KB.flows[flowId].symptom;
   botSay("Сценарий: <strong>"+esc(state.symptom)+"</strong>. Отвечайте кнопками — я буду сужать круг причин.<br>"+
-    '<div class="hint" style="margin-top:8px">⚖️ Это инструмент помощи, а не готовый диагноз: бот не всегда верен и не думает за мастера. Версии — только подсказки, решение и ответственность всегда за специалистом.</div>', null, 350);
+    '<div class="hint-red" style="margin-top:8px">⚖️ Это инструмент помощи, а не готовый диагноз: бот не всегда верен и не думает за мастера. Версии — только подсказки, решение и ответственность всегда за специалистом.</div>', null, 350);
   setTimeout(function(){ runIntake(); }, 800);
 }
 
@@ -2379,7 +2383,7 @@ function renderDataTab(){
    ПРИВЕТСТВИЕ
 ============================================================ */
 botSay("Здравствуйте! Я <strong>Холодильник Доктор</strong> 🔧❄️<br>Проведу диагностику по вопросам и покажу вероятные причины с проверками и оценкой сложности работ.<br><br>"+
-    '<div class="hint" style="margin-top:8px">⚖️ Важно: я — инструмент помощи, а не истина в последней инстанции. Бываю неправ и не заменяю мышление мастера: окончательный диагноз всегда за вами.</div>', null, 400);
+    '<div class="hint-red" style="margin-top:8px">⚖️ Важно: я — инструмент помощи, а не истина в последней инстанции. Бываю неправ и не заменяю мышление мастера: окончательный диагноз всегда за вами.</div>', null, 400);
 setTimeout(function(){ botSay(symptomMenu()); }, 800);
 </script>
 </body>
