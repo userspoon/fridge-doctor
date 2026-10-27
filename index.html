@@ -1989,6 +1989,21 @@ function askNode(nodeId){
   const flow = KB.flows[state.flowId];
   const node = flow && flow.nodes[nodeId];
   if(!node){ botSay("⚠️ Узел «"+esc(nodeId)+"» не найден в сценарии — проверьте его в редакторе базы знаний."); return; }
+  if(state.flowId === "no_start" && nodeId === "start" && state.vars.compressor === "2"){
+    const html2 = el("<div></div>");
+    html2.appendChild(el('<div class="q">'+esc(node.q)+"</div>"));
+    html2.appendChild(el('<div class="ed-note" style="margin-top:8px">ℹ️ Двухмоторный холодильник: если «не включается» именно контур ХК (морозилка при этом морозит) — короткий список кандидатов: мотор ХК или его пусковое реле, либо термостат (датчик) ХК. Проверьте, запускается ли второй мотор.</div>'));
+    if(node.hint) html2.appendChild(el('<div class="hint">💡 '+esc(node.hint)+"</div>"));
+    const chips2 = el('<div class="chips"></div>');
+    node.opts.forEach(function(opt){
+      const b2 = el('<button class="chip">'+esc(opt.t)+"</button>");
+      b2.onclick = function(){ choose(opt, chips2); };
+      chips2.appendChild(b2);
+    });
+    html2.appendChild(chips2);
+    botSay(html2);
+    return;
+  }
   if(nodeId === "nf_control" && state.vars.control && state.vars.control !== "unknown"){
     state.vars.nfctrl = state.vars.control === "mechanic" ? "mech" : "e";
     askNode(state.vars.control === "mechanic" ? "nf_mech_timer" : "comp");
@@ -2080,6 +2095,9 @@ function showResult(resId){
   if(!r){ botSay("⚠️ Результат «"+esc(resId)+"» не найден — проверьте базу знаний в редакторе."); return; }
   const wrap = el("<div></div>");
   wrap.appendChild(el('<div class="res-intro"><strong>🔎 '+esc(r.t)+"</strong><br>"+esc(r.intro||"")+"</div>"));
+  if(state.vars.compressor === "2" && (resId === "R_click" || resId === "R_thermostat_no_start" || resId === "R_control_no_start" || resId === "R_no_power_internal" || resId === "R_blinking_module")){
+    wrap.appendChild(el('<div class="ed-note" style="margin-top:8px">ℹ️ Двухмоторный: если мёртв только контур ХК (морозилка работает) — кандидаты коротким списком: мотор ХК (пусковое реле) или термостат/датчик ХК.</div>'));
+  }
   if(state.vars.compressor === "2" && (resId === "R_cap_hk" || resId === "R_dry_hk" || resId === "R_partial_leak")){
     wrap.appendChild(el('<div class="ed-note" style="margin-top:8px">ℹ️ По опросу холодильник двухкомпрессорный: проблема локализована в контуре холодильной камеры — проверяйте его испаритель, капилляр и собственный термостат/датчик отдельно от морозильного контура.</div>'));
   }
