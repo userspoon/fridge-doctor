@@ -908,9 +908,11 @@ R_fan_dead_deep:{t:"Вентилятор молчит даже при подме
   {id:"control_board", ch:"mid", note:"Обвинять модуль — только после проверки шлейфа и разъёмов."},
   {id:"evap_fan", ch:"low", note:"Убедитесь, что подменный вентилятор действительно подходит модели (по обратной связи и распиновке)."}
 ]},
-R_damper:{t:"Воздух не проходит в холодильную камеру", intro:"Холод есть, вентилятор гонит, но в камеру не попадает — проблема в канале.", causes:[
+R_damper:{t:"Воздух не проходит в холодильную камеру", intro:"Холод есть, вентилятор гонит, но в камеру не попадает — проблема в канале. Не забывайте: канал часто перекрыт льдом — проверяйте цепь оттайки и дренаж, а не только саму заслонку.", causes:[
   {id:"damper", ch:"high"},
-  {id:"defrost_heater", ch:"low", note:"Обмерзший канал воздуховода — следствие умершей оттайки."},
+  {id:"defrost_heater", ch:"mid", note:"Обмерзший канал воздуховода — следствие умершей оттайки. Проверьте ТЭН."},
+  {id:"defrost_sensor", ch:"mid", note:"Датчик оттайки (и плавкий предохранитель): оттайка не запускается или не завершается — канал зарастает льдом. Прозвоните оба."},
+  {id:"drain_clogged", ch:"mid", note:"Засор дренажной системы: вода не уходит, замерзает и перекрывает воздуховод. Проверьте лёд под нижним ящиком."},
   {id:"control_board", ch:"low"}
 ]},
 R_airflow:{t:"Холод есть в морозилке, но не доходит до холодильной камеры", intro:"В No Frost это почти всегда вопрос доставки воздуха.", causes:[
@@ -1972,6 +1974,11 @@ function askNode(nodeId){
   const flow = KB.flows[state.flowId];
   const node = flow && flow.nodes[nodeId];
   if(!node){ botSay("⚠️ Узел «"+esc(nodeId)+"» не найден в сценарии — проверьте его в редакторе базы знаний."); return; }
+  if(nodeId === "nf_control" && state.vars.control && state.vars.control !== "unknown"){
+    state.vars.nfctrl = state.vars.control === "mechanic" ? "mech" : "e";
+    askNode(state.vars.control === "mechanic" ? "nf_mech_timer" : "comp");
+    return;
+  }
   state.nodeId = nodeId;
   const html = el("<div></div>");
   html.appendChild(el('<div class="q">'+esc(node.q)+"</div>"));
@@ -2222,6 +2229,11 @@ function runIntake(){
    (кнопки — электронное, поворотная ручка — механическое);
    по бренду и возрасту не определяется: почти все бренды выпускают и те, и другие модели */
 function askControlType(){
+  if(state.vars.nfctrl){
+    state.vars.control = state.vars.nfctrl === "mech" ? "mechanic" : "electronic";
+    askCompressors();
+    return;
+  }
   const html = el("<div></div>");
   html.appendChild(el('<div class="q">Как регулируется температура в холодильнике?</div>'));
   html.appendChild(el('<div class="hint">💡 Кнопками или с дисплеем — электронное управление (команды формирует модуль). Поворотной ручкой — механическое (термостат). Почти все бренды выпускают и те, и другие модели, поэтому вернее посмотреть на регулировку, чем судить по марке и возрасту.</div>'));
