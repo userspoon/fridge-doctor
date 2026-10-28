@@ -303,6 +303,18 @@
   </div>
   <div class="ed-body"><div class="ed-wrap" id="serviceResults"></div></div>
 </div>
+<div id="pwAsk" style="display:none;position:fixed;inset:0;z-index:80;background:rgba(10,25,35,.6);align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:14px;padding:20px 22px;max-width:340px;box-shadow:0 10px 40px rgba(0,0,0,.4)">
+    <div style="font-weight:700;margin-bottom:6px">🔒 Редактор базы знаний</div>
+    <div style="font-size:13px;color:#5d7285;margin-bottom:12px">Введите пароль для входа в режим обучения.</div>
+    <input type="password" id="pwInput" placeholder="Пароль" style="width:100%;border:1.5px solid #1f7ae0;border-radius:9px;padding:9px 12px;font-size:15px;outline:none;font-family:inherit">
+    <div style="display:flex;gap:8px;margin-top:12px;justify-content:flex-end">
+      <button class="chip small" id="pwCancel">Отмена</button>
+      <button class="btn" id="pwOk">Войти</button>
+    </div>
+    <div id="pwErr" style="color:#d9363e;font-size:13px;margin-top:8px;display:none">Неверный пароль</div>
+  </div>
+</div>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -1622,7 +1634,28 @@ document.querySelectorAll(".ed-tabs button").forEach(function(b){
   b.onclick = function(){ openEditor(b.dataset.tab, {}); };
 });
 
+window.FD_EDIT_OK = false;
 function openEditor(tab, opts){
+  if(window.FD_EDIT_OK){ realOpenEditor(tab, opts); return; }
+  var box = document.getElementById("pwAsk");
+  var inp = document.getElementById("pwInput");
+  var err = document.getElementById("pwErr");
+  inp.value = ""; err.style.display = "none";
+  box.style.display = "flex";
+  setTimeout(function(){ try{ inp.focus(); }catch(e){} }, 50);
+  function close(){ box.style.display = "none"; inp.onkeydown = null; }
+  function try_(){
+    if(inp.value === "qwerty"){
+      window.FD_EDIT_OK = true; close(); realOpenEditor(tab, opts);
+    } else {
+      err.style.display = "block"; inp.value = ""; inp.focus();
+    }
+  }
+  document.getElementById("pwOk").onclick = try_;
+  document.getElementById("pwCancel").onclick = close;
+  inp.onkeydown = function(e){ if(e.key === "Enter") try_(); };
+}
+function realOpenEditor(tab, opts){
   ED.tab = tab;
   if(opts){
     if(opts.causeId !== undefined){ ED.openCauseForm = opts.causeId; }
