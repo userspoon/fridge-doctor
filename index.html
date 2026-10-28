@@ -1148,6 +1148,27 @@ document.getElementById("codesBack").onclick = function(){ document.getElementBy
 document.getElementById("codeSearch").oninput = renderCodes;
 
 /* ============================================================
+   ЖУРНАЛ ДИАГНОСТИК (в Google-таблицу владельца; пусто = выкл.)
+============================================================ */
+const FD_LOG_URL = ""; // URL веб-приложения Apps Script; пусто — логирование выключено
+function fdLog(r){
+  if(!FD_LOG_URL) return;
+  try{
+    const payload = {
+      d: new Date().toISOString(),
+      model: state.vars.model || "", age: state.vars.age || "",
+      comp: state.vars.compressor || "", ctrl: state.vars.control || "",
+      fz: state.vars.freezerPos || "",
+      symptom: state.symptom || "",
+      answers: state.answers.map(function(pr){ return pr[0] + " => " + pr[1]; }).join(" | "),
+      result: r ? r.t : "",
+      causes: (r && r.causes || []).map(function(c){ return (KB.causes[c.id] || {t:c.id}).t; }).join("; ")
+    };
+    fetch(FD_LOG_URL, {method:"POST", mode:"no-cors", headers:{"Content-Type":"text/plain"}, body: JSON.stringify(payload)});
+  }catch(e){}
+}
+
+/* ============================================================
    ДВИЖОК ДИАГНОСТИКИ
 ============================================================ */
 const state = {flowId:null, nodeId:null, vars:{}, answers:[], symptom:"", busy:false};
@@ -1308,6 +1329,7 @@ function causeCard(ref){
 function showResult(resId){
   const r = KB.results[resId];
   if(!r){ botSay("⚠️ Результат «"+esc(resId)+"» не найден — проверьте базу знаний в редакторе."); return; }
+  if(!state._logged){ state._logged = true; fdLog(r); }
   const wrap = el("<div></div>");
   wrap.appendChild(el('<div class="res-intro"><strong>🔎 '+esc(r.t)+"</strong><br>"+esc(r.intro||"")+"</div>"));
   if(resId === "R_thermostat_no_start" && state.vars.control === "mechanic"){
@@ -1402,7 +1424,7 @@ function symptomMenu(){
 }
 
 function startNew(){
-  state.flowId = null; state.nodeId = null; state.vars = {}; state.answers = []; state.symptom = ""; state.inputCb = null; startTok++;
+  state.flowId = null; state.nodeId = null; state.vars = {}; state.answers = []; state.symptom = ""; state.inputCb = null; state._logged = false; startTok++;
   botSay("Начинаем новую диагностику.", null, 300);
   setTimeout(function(){ botSay(symptomMenu()); }, 500);
 }
