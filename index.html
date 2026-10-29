@@ -1225,6 +1225,10 @@ function askNode(nodeId){
   const flow = KB.flows[state.flowId];
   const node = flow && flow.nodes[nodeId];
   if(!node){ botSay("⚠️ Узел «"+esc(nodeId)+"» не найден в сценарии — проверьте его в редакторе базы знаний."); return; }
+  if(state.flowId === "no_start" && nodeId === "display" && state.vars.control === "mechanic"){
+    showResult("R_thermostat_no_start");
+    return;
+  }
   if(state.flowId === "no_start" && nodeId === "start" && state.vars.compressor === "2"){
     const html2 = el("<div></div>");
     html2.appendChild(el('<div class="q">'+esc(node.q)+"</div>"));
@@ -1376,6 +1380,7 @@ function showDiagCard(r){
   txt += "  Возраст: " + (state.vars.age ? state.vars.age + " лет" : "______");
   txt += "  Компрессоров: " + (state.vars.compressor === "1" ? "один" : state.vars.compressor === "2" ? "два" : "неизвестно");
   txt += "  Управление: " + (state.vars.control === "electronic" ? "электронное" : state.vars.control === "mechanic" ? "механическое" : "неизвестно");
+  txt += "  Жалоба: " + (state.vars.complaint === "hk" ? "ХК" : state.vars.complaint === "mk" ? "МК" : state.vars.complaint === "both" ? "обе камеры" : "");
   txt += "  Морозилка: " + (state.vars.freezerPos === "bottom" ? "снизу" : state.vars.freezerPos === "top" ? "сверху" : state.vars.freezerPos === "sbs" ? "side-by-side" : "неизвестно");
   txt += "\n\n(Версии предварительные: бот — инструмент помощи и не всегда верен. Окончательный диагноз — за мастером.)";
   const wrap = el("<div></div>");
@@ -1598,6 +1603,25 @@ function askCompressors(){
       disableChips(chips);
       addUser(p[0]);
       state.vars.compressor = p[1];
+      if(p[1] === "2"){ askChamber(); return; }
+      askFreezerPos();
+    };
+    chips.appendChild(b);
+  });
+  html.appendChild(chips);
+  botSay(html);
+}
+
+function askChamber(){
+  const html = el("<div></div>");
+  html.appendChild(el('<div class="q">Двухмоторный — это по сути два холодильника в одном шкафу. На какую камеру жалуетесь?</div>'));
+  const chips = el('<div class="chips"></div>');
+  [["Холодильная камера (ХК)","hk"],["Морозильная камера (МК)","mk"],["Обе камеры","both"]].forEach(function(p){
+    const b = el('<button class="chip">'+p[0]+"</button>");
+    b.onclick = function(){
+      disableChips(chips);
+      addUser(p[0]);
+      state.vars.complaint = p[1];
       askFreezerPos();
     };
     chips.appendChild(b);
