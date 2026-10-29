@@ -68,7 +68,7 @@
   }
   .chips{display:flex; flex-wrap:wrap; gap:8px; margin-top:10px}
   .askform{display:flex; gap:8px; margin-top:10px}
-  .askform input{
+  .askform input,.askform select{
     flex:1; min-width:140px; border:1.5px solid var(--blue); border-radius:10px;
     padding:9px 12px; font-size:14px; font-family:inherit; outline:none;
   }
@@ -1486,16 +1486,78 @@ function askText(prompt, hint, cb){
   botSay(html, function(){ try{ inp.focus(); }catch(e){} });
 }
 
+const BRANDS = ["Атлант","Бирюса","Позис","Саратов","Свияга","Снайге","Норд","Стинол","Индезит (Indesit)","Хотпоинт-Аристон (Hotpoint-Ariston)","Бош (Bosch)","Сименс (Siemens)","Нефф (Neff)","Либхерр (Liebherr)","Миле (Miele)","Самсунг (Samsung)","ЭлДжи (LG)","Электролюкс (Electrolux)","Занусси (Zanussi)","АЕГ (AEG)","Вирпул (Whirlpool)","Горенье (Gorenje)","Беко (Beko)","Вестел (Vestel)","Вестфрост (Vestfrost)","Кайзер (Kaiser)","Шарп (Sharp)","Тошиба (Toshiba)","Хайер (Haier)","Дэу (Daewoo)","Ханса (Hansa)","Ардо (Ardo)","Шауб Лоренц (Schaub Lorenz)","Прочие бренды"];
+
 function runIntake(){
-  askText("Какая модель холодильника? Посмотрите на шильдик — табличку внутри камеры или снаружи сзади.",
-    "Шильдик пригодится и дальше: по дозе хладагента на нём определяется число компрессоров.",
-    function(v){
-      state.vars.model = v || "не указана";
-      askText("Сколько лет холодильнику?", null, function(a){
-        state.vars.age = a || "не указан";
-        askControlType();
-      });
-    });
+  askBrandSel();
+}
+
+function askBrandSel(){
+  const html = el("<div></div>");
+  html.appendChild(el('<div class="q">Бренд холодильника?</div>'));
+  html.appendChild(el('<div class="hint">💡 Если бренда нет в списке — выберите последний пункт «Прочие бренды».</div>'));
+  const form = el('<div class="askform"><select id="brandSel"><option value="">— выберите бренд —</option></select><button class="btn small">OK</button></div>');
+  const sel = form.querySelector("select");
+  BRANDS.forEach(function(b){
+    const o = el("<option></option>"); o.textContent = b; sel.appendChild(o);
+  });
+  const ok = form.querySelector("button");
+  ok.disabled = true;
+  sel.onchange = function(){ ok.disabled = !sel.value; };
+  ok.onclick = function(){
+    if(!sel.value) return;
+    ok.disabled = true; sel.disabled = true;
+    if(sel.value === "Прочие бренды"){ addUser(sel.value); askBrandCustom(); return; }
+    addUser(sel.value);
+    state.vars.model = sel.value;
+    askAgeSel();
+  };
+  html.appendChild(form);
+  botSay(html, function(){ try{ sel.focus(); }catch(e){} });
+}
+
+function askBrandCustom(){
+  const html = el("<div></div>");
+  html.appendChild(el('<div class="q">Напишите бренд холодильника</div>'));
+  const form = el('<div class="askform"><input type="text" class="askinput" placeholder="Название бренда"><button class="btn small">OK</button></div>');
+  const inp = form.querySelector("input");
+  const ok = form.querySelector("button");
+  ok.disabled = true;
+  inp.oninput = function(){ ok.disabled = !inp.value.trim(); };
+  function submit(){
+    const v = inp.value.trim();
+    if(!v) return;
+    ok.disabled = true; inp.disabled = true;
+    addUser(v);
+    state.vars.model = v;
+    askAgeSel();
+  }
+  ok.onclick = submit;
+  inp.addEventListener("keydown", function(e){ if(e.key === "Enter") submit(); });
+  html.appendChild(form);
+  botSay(html, function(){ try{ inp.focus(); }catch(e){} });
+}
+
+function askAgeSel(){
+  const html = el("<div></div>");
+  html.appendChild(el('<div class="q">Возраст холодильника?</div>'));
+  const form = el('<div class="askform"><select id="ageSel"><option value="">— выберите —</option></select><button class="btn small">OK</button></div>');
+  const sel = form.querySelector("select");
+  [["1–5","1–5 лет"],["5–10","5–10 лет"],["10–15","10–15 лет"],["15–20","15–20 лет"],["более 20","более 20 лет"]].forEach(function(pr){
+    const o = el("<option></option>"); o.value = pr[0]; o.textContent = pr[1]; sel.appendChild(o);
+  });
+  const ok = form.querySelector("button");
+  ok.disabled = true;
+  sel.onchange = function(){ ok.disabled = !sel.value; };
+  ok.onclick = function(){
+    if(!sel.value) return;
+    ok.disabled = true; sel.disabled = true;
+    addUser(sel.options[sel.selectedIndex].textContent);
+    state.vars.age = sel.value;
+    askControlType();
+  };
+  html.appendChild(form);
+  botSay(html);
 }
 
 /* тип управления: надёжный признак — как регулируется температура
