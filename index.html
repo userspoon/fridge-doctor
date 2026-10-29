@@ -1250,11 +1250,14 @@ function askNode(nodeId){
     return;
   }
   if(state.flowId === "not_cooling" && nodeId === "type_q" && state.vars.compressor === "2"){
-    state.vars.type = "cap";
-    addUser("Капельная (плачущий испаритель ХК)");
-    botSay("Двухмоторный холодильник — по практике это капельная система: у ХК свой «плачущий» испаритель. Вопрос о типе пропускаем.", null, 300);
-    setTimeout(function(){ askNode("comp"); }, 900);
-    return;
+    const c = state.vars.complaint || "";
+    if(c === "hk_full" || c === "hk_weak" || c === "hk" || c === "both"){
+      state.vars.type = "cap";
+      addUser("Капельная (плачущий испаритель ХК)");
+      botSay("Жалоба на ХК у двухмоторного — это капельная система: у ХК свой «плачущий» испаритель. Вопрос о типе пропускаем. (Если жалоба на МК — тип спросим отдельно: МК бывает и No Frost, и ручная разморозка.)", null, 300);
+      setTimeout(function(){ askNode("comp"); }, 900);
+      return;
+    }
   }
   if(nodeId === "nf_control" && state.vars.control && state.vars.control !== "unknown"){
     state.vars.nfctrl = state.vars.control === "mechanic" ? "mech" : "e";
