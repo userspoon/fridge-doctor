@@ -1269,7 +1269,25 @@ function askNode(nodeId){
   html.appendChild(el('<div class="q">'+esc(node.q)+"</div>"));
   if(node.hint) html.appendChild(el('<div class="hint">💡 '+esc(node.hint)+"</div>"));
   const chips = el('<div class="chips"></div>');
-  node.opts.forEach(function(opt){
+  let opts = node.opts;
+  if(state.flowId === "not_cooling" && nodeId === "type_q" && state.vars.compressor === "2"){
+    const c = state.vars.complaint || "";
+    const mk = c === "mk_full" || c === "mk_weak" || c === "mk";
+    opts = node.opts.filter(function(o){ return o.t.indexOf("клапан") === -1; })
+      .map(function(o){
+        if(mk && o.t.indexOf("Капельная") !== -1){
+          const copy = JSON.parse(JSON.stringify(o));
+          copy.t = "Ручная разморозка (открытый испаритель, без панели)";
+          copy.a = "Тип МК: ручная разморозка";
+          return copy;
+        }
+        return o;
+      });
+    if(opts.length !== node.opts.length || mk){
+      html.appendChild(el('<div class="hint" style="margin-top:6px">💡 Двухмоторный: клапана не бывает. Для МК варианты — только No Frost или ручная разморозка.</div>'));
+    }
+  }
+  opts.forEach(function(opt){
     const b = el('<button class="chip">'+esc(opt.t)+"</button>");
     b.onclick = function(){ choose(opt, chips); };
     chips.appendChild(b);
@@ -1649,7 +1667,10 @@ function askCompressors(){
       disableChips(chips);
       addUser(p[0]);
       state.vars.compressor = p[1];
-      if(p[1] === "2"){ askChamber(); return; }
+      if(p[1] === "2"){
+        if(state.vars.complaint){ askFreezerPos(); return; }
+        askChamber(); return;
+      }
       askFreezerPos();
     };
     chips.appendChild(b);
