@@ -5169,9 +5169,11 @@ function renderDataTab(){
   card.innerHTML =
     "<strong>Данные базы знаний</strong>"+
     '<div class="kv">Причин: <b>'+nC+"</b> · Сценариев: <b>"+nF+"</b> · Результатов: <b>"+nR+"</b></div>"+
-    '<div class="ed-note">Все правки автоматически сохраняются в этом браузере и сразу применяются в диалоге. Перенос на другой компьютер или обмен с коллегами — через экспорт/импорт файла.</div>'+
+    '<div class="ed-note">Все правки автоматически сохраняются в этом браузере и сразу применяются в диалоге. Перенос на другой компьютер или обмен с коллегами — через экспорт/импорт файла.</div>
+    <div class="ed-note" style="margin-top:6px"><b>⬆ Записать в заводскую</b>: скачивает полный index.html с вашими правками — положите его в папку проекта (замена старого) и закоммитьте через Git или пришлите мне.</div>'+
     '<div class="ed-actions">'+
-      '<button class="btn" id="dd_export">⬇ Экспорт в файл</button>'+
+      '<button class="btn" id="dd_export">⬇ Экспорт в файл</button>
+        <button class="btn green" id="dd_factory">⬆ Записать в заводскую (файл на диске)</button>'+
       '<button class="btn gray" id="dd_import">⬆ Импорт из файла</button>'+
       '<button class="btn red" id="dd_reset">↺ Сбросить к заводской</button>'+
     '</div>'+
@@ -5180,6 +5182,23 @@ function renderDataTab(){
   edContent.innerHTML = "";
   edContent.appendChild(box);
 
+  card.querySelector("#dd_factory").onclick = function(){
+    fetch("index.html").then(function(r){ return r.text(); }).then(function(html){
+      var i = html.indexOf("const BUILTIN = ");
+      var j = html.indexOf(";\n", i);
+      var head = html.slice(0, i);
+      var tail = html.slice(j + 1);
+      var literal = "const BUILTIN = " + JSON.stringify({causes: KB.causes, flows: KB.flows, results: KB.results}, null, 1) + ";";
+      var out = head + literal + tail;
+      var blob = new Blob([out], {type: "text/html"});
+      var a2 = document.createElement("a");
+      a2.href = URL.createObjectURL(blob);
+      a2.download = "index.html";
+      a2.click();
+      URL.revokeObjectURL(a2.href);
+      toast("Файл index.html скачан — положите его в папку проекта и закоммитьте");
+    })["catch"](function(e){ toast("Не удалось: " + e.message); });
+  };
   card.querySelector("#dd_export").onclick = function(){
     const blob = new Blob([JSON.stringify({v:1, causes:KB.causes, flows:KB.flows, results:KB.results}, null, 2)], {type:"application/json"});
     const a = document.createElement("a");
