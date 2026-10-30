@@ -4306,7 +4306,7 @@ function showDiagCard(r){
   txt += "  Компрессоров: " + (state.vars.compressor === "1" ? "один" : state.vars.compressor === "2" ? "два" : "неизвестно");
   txt += "  Управление: " + (state.vars.control === "electronic" ? "электронное" : state.vars.control === "mechanic" ? "механическое" : "неизвестно");
   txt += "  Жалоба: " + ({hk:"ХК", mk:"МК", both:"обе камеры", hk_full:"нет холода в ХК", hk_weak:"мало холода в ХК", mk_full:"нет холода в МК", mk_weak:"мало холода в МК"}[state.vars.complaint] || "");
-  txt += "  Морозилка: " + (state.vars.freezerPos === "bottom" ? "снизу" : state.vars.freezerPos === "top" ? "сверху" : state.vars.freezerPos === "sbs" ? "side-by-side" : "неизвестно");
+  txt += "  Морозилка: " + ({bottom:"снизу", top:"сверху", sbs:"side-by-side", inside:"внутри (однокамерный)"}[state.vars.freezerPos] || "неизвестно");
   txt += "\n\n(Версии предварительные: бот — инструмент помощи и не всегда верен. Окончательный диагноз — за мастером.)";
   const wrap = el("<div></div>");
   wrap.appendChild(el('<div class="res-intro"><strong>📋 Карточка диагностики</strong><br>Скопируйте в заявку, журнал или переписку.</div>'));
@@ -4593,7 +4593,7 @@ function askFreezerPos(){
   const html = el("<div></div>");
   html.appendChild(el('<div class="q">Где находится морозилка?</div>'));
   const chips = el('<div class="chips"></div>');
-  [["Снизу","bottom"],["Сверху","top"],["Side-by-side (рядом)","sbs"],["Не знаю","unknown"]].forEach(function(p){
+  [["Внутри (испаритель/отсек — однокамерный)","inside"],["Снизу","bottom"],["Сверху","top"],["Side-by-side (рядом)","sbs"],["Не знаю","unknown"]].forEach(function(p){
     const b = el('<button class="chip">'+p[0]+"</button>");
     b.onclick = function(){
       disableChips(chips);
