@@ -1004,7 +1004,9 @@ const BUILTIN = {
     "мало холода в х.к",
     "мало холода в м.к",
     "н.х в м.к",
-    "н.х в х.к"
+    "н.х в х.к",
+    "нет холода нигде",
+    "холода нет"
    ],
    "nodes": {
     "start": {
@@ -1049,6 +1051,14 @@ const BUILTIN = {
         "complaint": "both"
        },
        "next": "hk_light"
+      },
+      {
+       "t": "Нигде — холода нет вообще (однокамерный / один мотор)",
+       "a": "Холода нет нигде",
+       "set": {
+        "complaint": "none"
+       },
+       "next": "type_q"
       }
      ],
      "route_var": "complaint",
@@ -1059,7 +1069,8 @@ const BUILTIN = {
       "mk_weak": "type_q",
       "both": "hk_light",
       "hk": "hk_light",
-      "mk": "type_q"
+      "mk": "type_q",
+      "none": "type_q"
      }
     },
     "type_q": {
@@ -1165,6 +1176,19 @@ const BUILTIN = {
      "q": "Подтвердите картину по отделениям:",
      "hint": "Если жалоба уже известна из первого вопроса — просто подтвердите её кнопкой.",
      "opts": [
+      {
+       "t": "Холода нет вообще нигде",
+       "a": "Холода нет нигде",
+       "branch": {
+        "by": "type",
+        "map": {
+         "nofrost": "nf_elec_chain",
+         "cap": "res_cap_all",
+         "valve": "res_cap_all",
+         "unknown": "res_cap_all"
+        }
+       }
+      },
       {
        "t": "Холодильная камера тёплая/слабая, морозилка морозит",
        "a": "Тёплая только холодильная камера",
@@ -1547,6 +1571,13 @@ const BUILTIN = {
      "icon": "❄️",
      "vars": {
       "complaint": "mk_weak"
+     }
+    },
+    {
+     "label": "Нет холода (весь холодильник)",
+     "icon": "🧊",
+     "vars": {
+      "complaint": "none"
      }
     }
    ]
