@@ -4719,7 +4719,9 @@ const THERMO_CAUSE_IDS = {thermostat:1, defrost_timer:1};
 
 /* фильтр версий по типу управления */
 const MECH_EXCLUDED = {temp_sensor:1, evap_sensor_hk:1, control_board:1, defrost_sensor:1};
-function causeAllowed(id){
+function causeAllowed(ref){
+  if(ref.force) return true;
+  const id = ref.id;
   const c = state.vars.control;
   if(c === "electronic" && id === "thermostat") return false;
   if(c === "mechanic" && MECH_EXCLUDED[id]) return false;
@@ -4735,9 +4737,10 @@ function showResult(resId){
   if(resId === "R_thermostat_no_start" && state.vars.control === "mechanic" && state.vars.compressor !== "2"){
     if(state.vars.type === "nofrost"){
       causeList = [
-        {id:"thermostat", ch:"high", note:"Стинол-107 (вверху плачка, снизу No Frost, термостат, один мотор): не включается может быть термостат, ТЭН, плавкий предохранитель, таймер — то есть и цепь No Frost тоже проверяем."},
+        {id:"thermostat", ch:"high", note:"Стинол-107 (вверху плачка, снизу No Frost, термостат, один мотор): не включается может быть термостат, ТЭН, плавкий предохранитель, таймер, дефростер — то есть и цепь No Frost тоже проверяем."},
         {id:"defrost_heater", ch:"mid", note:"ТЭН и плавкий предохранитель стоят последовательно — прозвонить оба."},
-        {id:"defrost_timer", ch:"mid", note:"Механический таймер оттайки: подключить проверочный провод — исправный тикает."}
+        {id:"defrost_timer", ch:"mid", note:"Механический таймер оттайки: подключить проверочный провод — исправный тикает."},
+        {id:"defrost_sensor", ch:"low", force:true, note:"На таких моделях бывает и дефростер (датчик оттайки) — прозвонить на холодном испарителе."}
       ];
     } else if(state.vars.type === "valve"){
       causeList = [
@@ -4753,7 +4756,7 @@ function showResult(resId){
       ];
     }
   }
-  causeList = causeList.filter(function(ref){ return causeAllowed(ref.id); });
+  causeList = causeList.filter(function(ref){ return causeAllowed(ref); });
   const wrap = el("<div></div>");
   wrap.appendChild(el('<div class="res-intro"><strong>🔎 '+esc(r.t)+"</strong><br>"+esc(r.intro||"")+"</div>"));
   if(resId === "R_thermostat_no_start" && state.vars.control === "mechanic"){
