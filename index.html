@@ -257,7 +257,8 @@
 </head>
 <body>
 <div class="app">
-  <input type="file" id="photoInput" accept="image/*" capture="environment" style="display:none">
+  <input type="file" id="photoCam" accept="image/*" capture="environment" style="display:none">
+  <input type="file" id="photoGal" accept="image/*" style="display:none">
   <header>
     <div class="logo">❄️ Холодильник<span>Доктор</span></div>
     <nav>
@@ -4971,19 +4972,24 @@ const PHOTO_REFR = /R\s?-?\s?(134a|600a|290|404a|407c|410a|12|22|502)\b/i;
 
 function showPhotoMenu(){
   const wrap = el("<div></div>");
-  wrap.appendChild(el('<div class="res-intro"><strong>📷 Фото-вход</strong><br>Сфотографируйте и приложите — бот разберёт фото прямо в браузере, снимок никуда не отправляется.</div>'));
+  wrap.appendChild(el('<div class="res-intro"><strong>📷 Фото-вход</strong><br>Сфотографируйте или выберите из галереи — бот разберёт фото прямо в браузере, снимок никуда не отправляется.</div>'));
   const chips = el('<div class="chips"></div>');
-  const b1 = el('<button class="chip">🏷 Шильдик — бренд, модель, хладагент</button>');
-  b1.onclick = function(){ disableChips(chips); pickPhoto("plate"); };
-  const b2 = el('<button class="chip">❄️ Испаритель / морозилка — что видно</button>');
-  b2.onclick = function(){ disableChips(chips); pickPhoto("evap"); };
-  chips.appendChild(b1); chips.appendChild(b2);
+  [
+    ["🏷 Шильдик — сфотографировать", "plate", true],
+    ["🖼 Шильдик — из галереи", "plate", false],
+    ["❄️ Испаритель — сфотографировать", "evap", true],
+    ["🖼 Испаритель — из галереи", "evap", false]
+  ].forEach(function(p){
+    const b = el('<button class="chip">'+p[0]+"</button>");
+    b.onclick = function(){ disableChips(chips); pickPhoto(p[1], p[2]); };
+    chips.appendChild(b);
+  });
   wrap.appendChild(chips);
   botSay(wrap, null, 400);
 }
 
-function pickPhoto(mode){
-  const inp = document.getElementById("photoInput");
+function pickPhoto(mode, useCam){
+  const inp = document.getElementById(useCam ? "photoCam" : "photoGal");
   inp.value = "";
   inp.onchange = function(){
     const f = inp.files && inp.files[0];
@@ -5084,27 +5090,57 @@ function preprocessPhoto(dataUrl, cb){
 function ocrPlate(dataUrl){
   const thinking = el('<div class="typing"><i></i><i></i><i></i></div>');
   botSay(thinking, null, 0);
+  let done = false;
+  const timer = setTimeout(function(){
+    if(done) return;
+    done = true;
+    thinking.remove();
+    ocrFailManual("Распознавание затянулось дольше минуты — остановил. Разберите шильдик вручную:");
+  }, 60000);
   loadTesseract(function(err){
+    if(done) return;
     if(err){
-      thinking.remove();
-      const w = el("<div></div>");
-      w.appendChild(el('<div class="res-intro">⚠️ Распознавание текста недоступно (нет интернета для загрузки OCR-модуля). Перепишите шильдик вручную в строку чата: бренд + модель + хладагент.</div>'));
-      botSay(w, null, 300);
+      done = true; clearTimeout(timer); thinking.remove();
+      ocrFailManual("Распознавание текста недоступно (нет интернета для загрузки OCR-модуля).");
       return;
     }
     preprocessPhoto(dataUrl, function(prepared){
-      Tesseract.recognize(prepared, "eng", {
-        logger:function(){},
-        rectangle: undefined
-      }).then(function(res){
-        thinking.remove();
-        plateResult(res.data.text || "");
-      }).catch(function(){
-        thinking.remove();
-        botSay("⚠️ Не удалось разобрать фото. Попробуйте переснять ближе и без бликов, или впишите данные вручную.", null, 300);
-      });
+      Tesseract.recognize(prepared, "eng", {logger:function(){}})
+        .then(function(res){
+          if(done) return;
+          done = true; clearTimeout(timer); thinking.remove();
+          plateResult(res.data.text || "");
+        })
+        .catch(function(){
+          if(done) return;
+          done = true; clearTimeout(timer); thinking.remove();
+          ocrFailManual("Не удалось разобрать фото. Попробуйте переснять ближе и без бликов, или введите данные вручную:");
+        });
     });
   });
+}
+
+function ocrFailManual(msg){
+  const wrap = el("<div></div>");
+  wrap.appendChild(el('<div class="res-intro">⚠️ '+esc(msg)+"</div>"));
+  wrap.appendChild(manualEntryChips(null));
+  botSay(wrap, null, 300);
+}
+
+function manualEntryChips(chips){
+  const row = el('<div class="chips"></div>');
+  const b = el('<button class="chip small">⌨️ Ввести вручную</button>');
+  b.onclick = function(){
+    if(chips) disableChips(chips);
+    disableChips(row);
+    botSay("Напишите в строке ниже: бренд, модель, хладагент (например: «LG GA-E489ZAQZ R600a 64г»)", null, 200);
+    state.inputCb = function(t){
+      addUser(t);
+      plateResult(t);
+    };
+  };
+  row.appendChild(b);
+  return row;
 }
 
 function plateResult(text){
@@ -5159,15 +5195,16 @@ function plateResult(text){
     const b = el('<button class="chip small">🔧 Диагностика: '+esc(brand)+"</button>");
     b.onclick = function(){
       disableChips(chips);
+      startNew();
       state.brand = brand;
       addUser("Диагностика: "+brand);
-      startNew();
-      botSay('ℹ️ Бренд зафиксирован: <b>'+esc(brand)+"</b> — учитывайте его при выборе версий (двухмоторный, клапан, No Frost).", null, 500);
+      botSay('ℹ️ Бренд зафиксирован: <b>'+esc(brand)+"</b>"+(model?" ("+esc(model)+")":"")+" — выберите симптом ниже.", null, 500);
     };
     chips.appendChild(b);
   }
+  chips.appendChild(manualEntryChips(null));
   const again = el('<button class="chip small">📷 Переснять</button>');
-  again.onclick = function(){ disableChips(chips); pickPhoto("plate"); };
+  again.onclick = function(){ disableChips(chips); pickPhoto("plate", true); };
   chips.appendChild(again);
   wrap.appendChild(chips);
   botSay(wrap, null, 400);
