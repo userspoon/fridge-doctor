@@ -4730,14 +4730,28 @@ function showResult(resId){
   const r = KB.results[resId];
   if(!r){ botSay("⚠️ Результат «"+esc(resId)+"» не найден — проверьте базу знаний в редакторе."); return; }
   if(!state._logged){ state._logged = true; fdLog(r); }
-  /* механика + один мотор + не включается: ровно три кандидата */
+  /* механика + один мотор + не включается: кандидаты по типу системы */
   let causeList = r.causes || [];
   if(resId === "R_thermostat_no_start" && state.vars.control === "mechanic" && state.vars.compressor !== "2"){
-    causeList = [
-      {id:"thermostat", ch:"high"},
-      {id:"compressor_windings", ch:"mid"},
-      {id:"start_relay", ch:"mid"}
-    ];
+    if(state.vars.type === "nofrost"){
+      causeList = [
+        {id:"thermostat", ch:"high", note:"Стинол-107 (вверху плачка, снизу No Frost, термостат, один мотор): не включается может быть термостат, ТЭН, плавкий предохранитель, таймер — то есть и цепь No Frost тоже проверяем."},
+        {id:"defrost_heater", ch:"mid", note:"ТЭН и плавкий предохранитель стоят последовательно — прозвонить оба."},
+        {id:"defrost_timer", ch:"mid", note:"Механический таймер оттайки: подключить проверочный провод — исправный тикает."}
+      ];
+    } else if(state.vars.type === "valve"){
+      causeList = [
+        {id:"thermostat", ch:"high", note:"Минск-161 (МК — ручная разморозка, ХК — плачка): сверху виден один термостат ХК — он переключает клапан; под крышкой термостат МК — по нему выключается. Не включается: термостат МК, мотор, п/з. А если нет холода в ХК — то термостат ХК."},
+        {id:"compressor_windings", ch:"mid"},
+        {id:"start_relay", ch:"mid"}
+      ];
+    } else {
+      causeList = [
+        {id:"thermostat", ch:"high", note:"Бирюса-131 и подобные (вверху плачка, МК — ручная разморозка, один мотор): не включается — либо термостат, либо мотор, либо п/з."},
+        {id:"compressor_windings", ch:"mid"},
+        {id:"start_relay", ch:"mid"}
+      ];
+    }
   }
   causeList = causeList.filter(function(ref){ return causeAllowed(ref.id); });
   const wrap = el("<div></div>");
