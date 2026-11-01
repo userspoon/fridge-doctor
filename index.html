@@ -58,6 +58,15 @@
     border-radius:14px 14px 4px 14px;
   }
   .bubble .q{font-weight:600; margin-bottom:4px}
+  .bubble img{max-width:100%; max-height:320px; border-radius:10px; display:block; margin-top:6px}
+  .ocr-out{
+    font-family:Consolas, "Courier New", monospace; font-size:12.5px; background:#f4f7fa;
+    border:1px solid #dfe7ee; border-radius:8px; padding:8px 10px; margin-top:8px;
+    white-space:pre-wrap; word-break:break-word; max-height:160px; overflow-y:auto; color:#33475a;
+  }
+  .photo-kv{margin-top:8px}
+  .photo-kv div{margin:3px 0; font-size:14px}
+  .photo-kv b{color:var(--blue-dark)}
   .bubble .hint{
     font-size:13px; color:var(--muted); background:#f2f6fa;
     border-left:3px solid var(--blue); padding:8px 10px; border-radius:6px; margin-top:8px;
@@ -248,10 +257,12 @@
 </head>
 <body>
 <div class="app">
+  <input type="file" id="photoInput" accept="image/*" capture="environment" style="display:none">
   <header>
     <div class="logo">❄️ Холодильник<span>Доктор</span></div>
     <nav>
       <button id="btnNew">🔧 Диагностика</button>
+      <button id="btnPhoto">📷 Фото</button>
       <button id="btnRef">📖 Справочник</button>
       <button id="btnSafe">⚠️ Безопасность</button>
       <button id="btnTeach">🎓 Обучение</button>
@@ -4227,6 +4238,7 @@ document.getElementById("btnService").onclick = openService;
 document.getElementById("serviceBack").onclick = function(){ document.getElementById("service").classList.remove("open"); };
 
 document.getElementById("btnCodes").onclick = function(){ openCodes(""); };
+document.getElementById("btnPhoto").onclick = function(){ addUser("📷 Фото"); showPhotoMenu(); };
 document.getElementById("codesBack").onclick = function(){ document.getElementById("codes").classList.remove("open"); };
 document.getElementById("codeSearch").oninput = renderCodes;
 
@@ -4897,6 +4909,201 @@ function askFreezerPos(){
   });
   html.appendChild(chips);
   botSay(html);
+}
+
+/* ============================================================
+   ФОТО-ВХОД: шильдик (OCR в браузере) и испаритель
+============================================================ */
+const PHOTO_BRANDS = [
+ ["Hotpoint-Ariston",["hotpoint","аристон","ariston"]],
+ ["Indesit",["indesit","индезит"]],
+ ["Stinol",["stinol","стинол"]],
+ ["Атлант",["atlant","атлант"]],
+ ["Бирюса",["biryusa","бирюса"]],
+ ["Саратов",["саратов","saratov"]],
+ ["Позис",["позис","pozi[sс]"]],
+ ["Минск",["минск","minsk"]],
+ ["Норд",["норд","nord\\s"]],
+ ["Bosch",["bosch","бош"]],
+ ["Siemens",["siemens"]],
+ ["Samsung",["samsung","самсунг"]],
+ ["LG",["\\blg\\b"]],
+ ["Liebherr",["liebherr","либхер"]],
+ ["Electrolux",["electrolux","электролюкс"]],
+ ["Zanussi",["zanussi","занусси"]],
+ ["AEG",["\\baeg\\b"]],
+ ["Whirlpool",["whirlpool"]],
+ ["Candy",["candy"]],
+ ["Beko",["beko"]],
+ ["Vestfrost",["vestfrost"]],
+ ["Gorenje",["gorenje","горенье"]],
+ ["Haier",["haier"]],
+ ["Midea",["midea"]],
+ ["Hisense",["hisense"]],
+ ["Toshiba",["toshiba"]],
+ ["Sharp",["sharp"]],
+ ["Daewoo",["daewoo","дэу"]],
+ ["Aquel",["aquel","аквел"]],
+ ["Дон",["\\bdon\\b","\\bдон\\b"]]
+];
+const PHOTO_REFR = /R\s?-?\s?(134a|600a|290|404a|407c|410a|12|22|502)\b/i;
+
+function showPhotoMenu(){
+  const wrap = el("<div></div>");
+  wrap.appendChild(el('<div class="res-intro"><strong>📷 Фото-вход</strong><br>Сфотографируйте и приложите — бот разберёт фото прямо в браузере, снимок никуда не отправляется.</div>'));
+  const chips = el('<div class="chips"></div>');
+  const b1 = el('<button class="chip">🏷 Шильдик — бренд, модель, хладагент</button>');
+  b1.onclick = function(){ disableChips(chips); pickPhoto("plate"); };
+  const b2 = el('<button class="chip">❄️ Испаритель / морозилка — что видно</button>');
+  b2.onclick = function(){ disableChips(chips); pickPhoto("evap"); };
+  chips.appendChild(b1); chips.appendChild(b2);
+  wrap.appendChild(chips);
+  botSay(wrap, null, 400);
+}
+
+function pickPhoto(mode){
+  const inp = document.getElementById("photoInput");
+  inp.value = "";
+  inp.onchange = function(){
+    const f = inp.files && inp.files[0];
+    if(!f) return;
+    handlePhoto(f, mode);
+  };
+  inp.click();
+}
+
+function handlePhoto(file, mode){
+  addUser(mode === "plate" ? "📷 Фото шильдика" : "📷 Фото испарителя");
+  const rd = new FileReader();
+  rd.onload = function(){
+    const bubble = el('<div class="bubble"><img alt="фото"></div>');
+    bubble.querySelector("img").src = rd.result;
+    botSay(bubble, null, 200);
+    if(mode === "plate") ocrPlate(rd.result);
+    else evapGuide();
+  };
+  rd.readAsDataURL(file);
+}
+
+/* --- испаритель: что оценить на фото --- */
+function evapGuide(){
+  const wrap = el("<div></div>");
+  wrap.appendChild(el('<div class="res-intro"><strong>❄️ Что оценить на фото испарителя</strong></div>'));
+  const card = el('<div class="ref"><div class="card"><ul style="padding-left:18px;font-size:14px;line-height:1.55"></ul></div></div>');
+  [
+    "Испаритель весь в инее равномерно — контур работает, холод есть: смотрите вентилятор, заслонку, датчики, систему оттайки.",
+    "Иней пятнами, часть испарителя сухая — нехватка хладагента: утечка (частичная).",
+    "Глыба льда / снежная шуба — не работает оттайка: ТЭН, плавкий предохранитель, датчик оттайки, таймер; либо забит дренаж (лёд под нижним ящиком).",
+    "Полностью сухой при работающем моторе — контур пуст: утечка (полная) или засор капилляра.",
+    "Лёд на крыльчатке вентилятора — вентилятор блокируется льдом: лечится оттайкой, затем искать причину намораживания."
+  ].forEach(function(s){ card.querySelector("ul").appendChild(el("<li>"+esc(s)+"</li>")); });
+  wrap.appendChild(card);
+  const chips = el('<div class="chips"></div>');
+  [
+    ["🥶 Нет холода — диагностика", function(){ startFlowVariant("not_cooling", 0, null); }],
+    ["🧊 Лёд/шуба — диагностика", function(){ startFlow("ice", null); }],
+    ["🔧 Сначала тип системы", function(){ startFlow("not_cooling", null); }]
+  ].forEach(function(p){
+    const b = el('<button class="chip small">'+p[0]+"</button>");
+    b.onclick = function(){ disableChips(chips); p[1](); };
+    chips.appendChild(b);
+  });
+  wrap.appendChild(chips);
+  botSay(wrap, null, 500);
+}
+
+/* --- шильдик: OCR через Tesseract.js (CDN, лениво) --- */
+let tesseractLoading = false;
+function loadTesseract(cb){
+  if(window.Tesseract){ cb(); return; }
+  if(tesseractLoading){ setTimeout(function(){ loadTesseract(cb); }, 300); return; }
+  tesseractLoading = true;
+  const s = document.createElement("script");
+  s.src = "https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js";
+  s.onload = function(){ tesseractLoading = false; cb(); };
+  s.onerror = function(){ tesseractLoading = false; cb("fail"); };
+  document.head.appendChild(s);
+}
+
+function ocrPlate(dataUrl){
+  const thinking = el('<div class="typing"><i></i><i></i><i></i></div>');
+  botSay(thinking, null, 0);
+  loadTesseract(function(err){
+    if(err){
+      thinking.remove();
+      const w = el("<div></div>");
+      w.appendChild(el('<div class="res-intro">⚠️ Распознавание текста недоступно (нет интернета для загрузки OCR-модуля). Перепишите шильдик вручную в строку чата: бренд + модель + хладагент.</div>'));
+      botSay(w, null, 300);
+      return;
+    }
+    Tesseract.recognize(dataUrl, "eng", {logger:function(){}})
+      .then(function(res){
+        thinking.remove();
+        plateResult(res.data.text || "");
+      })
+      .catch(function(){
+        thinking.remove();
+        botSay("⚠️ Не удалось разобрать фото. Попробуйте переснять ближе и без бликов, или впишите данные вручную.", null, 300);
+      });
+  });
+}
+
+function plateResult(text){
+  const clean = text.replace(/\s+/g," ").trim();
+  let brand = null, brandSrc = null;
+  const low = clean.toLowerCase();
+  PHOTO_BRANDS.forEach(function(p){
+    if(brand) return;
+    for(var i=0;i<p[1].length;i++){
+      if(new RegExp(p[1][i],"i").test(low)){ brand = p[0]; brandSrc = p[1][i]; break; }
+    }
+  });
+  const ref = (clean.match(PHOTO_REFR)||[])[0] || null;
+  const gr = (clean.match(/(\d{2,3})\s?(?:g|гр|г)\b/i)||[])[1] || null;
+  /* кандидат в модель: токен с буквами и цифрами, 5+ знаков, не бренд и не хладагент */
+  let model = null;
+  const tokens = clean.split(/[\s,;|]+/);
+  for(var i=0;i<tokens.length;i++){
+    const t = tokens[i].replace(/[^A-Za-zА-Яа-я0-9\-\.]/g,"");
+    if(t.length>=5 && /\d/.test(t) && /[A-Za-zА-Яа-я]/.test(t) &&
+       !(brand && low.indexOf(t.toLowerCase()) === low.indexOf(brand.toLowerCase()) && brandSrc === t.toLowerCase()) &&
+       !/^r-?\d/i.test(t)){
+      model = t; break;
+    }
+  }
+  const wrap = el("<div></div>");
+  let intro = "<strong>🏷 Распознанный шильдик</strong><br>";
+  if(!brand && !ref && !model){
+    intro += "Ничего знакомого не нашёл — перепишите данные вручную.";
+  }
+  wrap.appendChild(el('<div class="res-intro">'+intro+"</div>"));
+  const kv = el('<div class="ed-card photo-kv"></div>');
+  kv.innerHTML =
+    "<div>Бренд: <b>"+(brand?esc(brand):"—")+"</b></div>"+
+    "<div>Модель (кандидат): <b>"+(model?esc(model):"—")+"</b></div>"+
+    "<div>Хладагент: <b>"+(ref?esc(ref):"—")+"</b>"+(gr?" · заправка ~<b>"+esc(gr)+" г</b>":"")+"</div>";
+  wrap.appendChild(kv);
+  if(clean){
+    const det = el('<details class="cause" style="margin-top:8px"><summary>📄 Весь распознанный текст <span class="arr" style="color:#5d7285">▼</span></summary><div class="body"><div class="ocr-out">'+esc(clean)+"</div></div></details>");
+    wrap.appendChild(det);
+  }
+  const chips = el('<div class="chips"></div>');
+  if(brand){
+    const b = el('<button class="chip small">🔧 Диагностика: '+esc(brand)+"</button>");
+    b.onclick = function(){
+      disableChips(chips);
+      state.brand = brand;
+      addUser("Диагностика: "+brand);
+      startNew();
+      botSay('ℹ️ Бренд зафиксирован: <b>'+esc(brand)+"</b> — учитывайте его при выборе версий (двухмоторный, клапан, No Frost).", null, 500);
+    };
+    chips.appendChild(b);
+  }
+  const again = el('<button class="chip small">📷 Переснять</button>');
+  again.onclick = function(){ disableChips(chips); pickPhoto("plate"); };
+  chips.appendChild(again);
+  wrap.appendChild(chips);
+  botSay(wrap, null, 400);
 }
 
 /* свободный текст */
