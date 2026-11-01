@@ -1853,6 +1853,30 @@ const BUILTIN = {
       }
      ]
     },
+    "mech_type": {
+     "q": "Какая система охлаждения?",
+     "hint": "Старые модели — «плачущий» испаритель (капельная, задняя стенка ХК покрывается каплями) или с переключающим клапаном (один мотор, два контура). Новые бывают с No Frost: в морозилке вентилятор, стенки сухие.",
+     "opts": [
+      {
+       "t": "Плачущая (капельная)",
+       "a": "Тип: капельная",
+       "set": {"type": "cap"},
+       "res": "R_thermostat_no_start"
+      },
+      {
+       "t": "No Frost",
+       "a": "Тип: No Frost",
+       "set": {"type": "nofrost"},
+       "res": "R_thermostat_no_start"
+      },
+      {
+       "t": "С переключающим клапаном (один мотор, два контура)",
+       "a": "Тип: с клапаном",
+       "set": {"type": "valve"},
+       "res": "R_thermostat_no_start"
+      }
+     ]
+    },
     "display_show": {
      "q": "Что на дисплее?",
      "opts": [
@@ -4461,7 +4485,7 @@ function askNode(nodeId){
     }
   }
   if(state.flowId === "no_start" && nodeId === "display" && state.vars.control === "mechanic"){
-    showResult("R_thermostat_no_start");
+    askNode("mech_type");
     return;
   }
   if(state.flowId === "no_start" && nodeId === "start" && state.vars.compressor === "2"){
