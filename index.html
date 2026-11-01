@@ -4491,7 +4491,9 @@ function sensorTableCard(){
     SENSOR_COLS.forEach(function(c){ body += "<td>"+(c.v[i]?"<b>"+esc(c.v[i])+"</b>":"")+"</td>"; });
     body += "</tr>";
   });
-  body += "</table></div>";
+  body += '<tr><th>t °C</th>';
+  SENSOR_COLS.forEach(function(c){ body += "<th>"+esc(c.n)+"</th>"; });
+  body += "</tr></table></div>";
   SENSOR_LIEBHERR_NOTES.forEach(function(n){ body += '<div class="ed-note">'+esc(n)+"</div>"; });
   body += "</div>";
   d.innerHTML = head + body;
