@@ -1855,6 +1855,7 @@ const BUILTIN = {
       {
        "t": "Мотор и п/з исправны — идём дальше",
        "a": "Мотор и п/з исправны",
+       "set": {"motor_ok": "1"},
        "next": "display"
       }
      ]
@@ -4804,6 +4805,9 @@ function showResult(resId){
     }
   }
   causeList = causeList.filter(function(ref){ return causeAllowed(ref); });
+  if(state.vars.motor_ok === "1"){
+    causeList = causeList.filter(function(ref){ return ref.id !== "compressor_windings" && ref.id !== "start_relay"; });
+  }
   const wrap = el("<div></div>");
   wrap.appendChild(el('<div class="res-intro"><strong>🔎 '+esc(r.t)+"</strong><br>"+esc(r.intro||"")+"</div>"));
   if(resId === "R_thermostat_no_start" && state.vars.control === "mechanic"){
