@@ -5025,6 +5025,41 @@ function loadTesseract(cb){
   document.head.appendChild(s);
 }
 
+/* предобработка фото: масштаб до ~1600px по меньшей стороне + grayscale + контраст */
+function preprocessPhoto(dataUrl, cb){
+  const img = new Image();
+  img.onload = function(){
+    try{
+      const scale = Math.min(3, Math.max(1, 1600 / Math.min(img.width, img.height)));
+      const w = Math.round(img.width*scale), h = Math.round(img.height*scale);
+      const c = document.createElement("canvas");
+      c.width = w; c.height = h;
+      const x = c.getContext("2d");
+      x.drawImage(img, 0, 0, w, h);
+      const d = x.getImageData(0, 0, w, h), p = d.data;
+      /* grayscale + гистограмма яркости */
+      let mn = 255, mx = 0;
+      const gray = new Uint8ClampedArray(w*h);
+      for(let i=0, j=0; i<p.length; i+=4, j++){
+        const g = (p[i]*0.299 + p[i+1]*0.587 + p[i+2]*0.114) | 0;
+        gray[j] = g;
+        if(g < mn) mn = g; if(g > mx) mx = g;
+      }
+      /* контраст-стретч + лёгкая соляризация тёмного текста */
+      const rng = Math.max(1, mx - mn);
+      for(let i=0, j=0; i<p.length; i+=4, j++){
+        let g = ((gray[j] - mn) * 255 / rng) | 0;
+        g = g < 90 ? 0 : (g > 175 ? 255 : g);   /* прижать фон и тени */
+        p[i] = p[i+1] = p[i+2] = g;
+      }
+      x.putImageData(d, 0, 0);
+      cb(c.toDataURL("image/png"));
+    }catch(e){ cb(dataUrl); }
+  };
+  img.onerror = function(){ cb(dataUrl); };
+  img.src = dataUrl;
+}
+
 function ocrPlate(dataUrl){
   const thinking = el('<div class="typing"><i></i><i></i><i></i></div>');
   botSay(thinking, null, 0);
@@ -5036,15 +5071,18 @@ function ocrPlate(dataUrl){
       botSay(w, null, 300);
       return;
     }
-    Tesseract.recognize(dataUrl, "eng", {logger:function(){}})
-      .then(function(res){
+    preprocessPhoto(dataUrl, function(prepared){
+      Tesseract.recognize(prepared, "eng", {
+        logger:function(){},
+        rectangle: undefined
+      }).then(function(res){
         thinking.remove();
         plateResult(res.data.text || "");
-      })
-      .catch(function(){
+      }).catch(function(){
         thinking.remove();
         botSay("⚠️ Не удалось разобрать фото. Попробуйте переснять ближе и без бликов, или впишите данные вручную.", null, 300);
       });
+    });
   });
 }
 
@@ -5060,15 +5098,23 @@ function plateResult(text){
   });
   const ref = (clean.match(PHOTO_REFR)||[])[0] || null;
   const gr = (clean.match(/(\d{2,3})\s?(?:g|гр|г)\b/i)||[])[1] || null;
-  /* кандидат в модель: токен с буквами и цифрами, 5+ знаков, не бренд и не хладагент */
+  /* кандидат в модель: сначала строка «Модель / Model», потом эвристика */
   let model = null;
-  const tokens = clean.split(/[\s,;|]+/);
-  for(var i=0;i<tokens.length;i++){
-    const t = tokens[i].replace(/[^A-Za-zА-Яа-я0-9\-\.]/g,"");
-    if(t.length>=5 && /\d/.test(t) && /[A-Za-zА-Яа-я]/.test(t) &&
-       !(brand && low.indexOf(t.toLowerCase()) === low.indexOf(brand.toLowerCase()) && brandSrc === t.toLowerCase()) &&
-       !/^r-?\d/i.test(t)){
-      model = t; break;
+  const lines = text.split(/\n+/);
+  for(let li=0; li<lines.length && !model; li++){
+    if(!/модел|model/i.test(lines[li])) continue;
+    const joined = lines[li].replace(/[\u2013\u2014]/g,"-").replace(/\s*-\s*/g,"-");
+    const m = joined.match(/[A-Za-z]{1,3}-?[A-Z0-9][A-Za-z0-9]{4,}/g) || [];
+    for(let k=0;k<m.length;k++){
+      const t = m[k];
+      if(/\d/.test(t) && !/^r-?\d/i.test(t) && t.replace(/[^0-9]/g,"").length>=2){ model = t; break; }
+    }
+  }
+  if(!model){
+    const tokens = clean.split(/[\s,;|]+/);
+    for(var i=0;i<tokens.length && !model;i++){
+      const t = tokens[i].replace(/[^A-Za-zА-Яа-я0-9\-\.]/g,"");
+      if(t.length>=6 && /\d/.test(t) && /[A-Za-z]/.test(t) && !/^r-?\d/i.test(t)) model = t;
     }
   }
   const wrap = el("<div></div>");
