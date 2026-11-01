@@ -5182,6 +5182,24 @@ function preprocessPhoto(dataUrl, cb){
   img.src = dataUrl;
 }
 
+/* бренд обычно в левом верхнем углу шильдика — отдельный крупный проход */
+function cropTopLeft(dataUrl, cb){
+  const img = new Image();
+  img.onload = function(){
+    try{
+      const w = Math.round(img.width*0.55), h = Math.round(img.height*0.4);
+      const scale = Math.min(4, Math.max(2, 1200 / Math.max(w,h)));
+      const c = document.createElement("canvas");
+      c.width = Math.round(w*scale); c.height = Math.round(h*scale);
+      const x = c.getContext("2d");
+      x.drawImage(img, 0, 0, w, h, 0, 0, c.width, c.height);
+      cb(c.toDataURL("image/png"));
+    }catch(e){ cb(null); }
+  };
+  img.onerror = function(){ cb(null); };
+  img.src = dataUrl;
+}
+
 function ocrPlate(dataUrl){
   const thinking = el('<div class="typing"><i></i><i></i><i></i></div>');
   botSay(thinking, null, 0);
@@ -5190,8 +5208,27 @@ function ocrPlate(dataUrl){
     if(done) return;
     done = true;
     thinking.remove();
-    ocrFailManual("Распознавание затянулось дольше минуты — остановил. Разберите шильдик вручную:");
-  }, 60000);
+    ocrFailManual("Распознавание затянулось дольше полутора минут — остановил. Разберите шильдик вручную:");
+  }, 90000);
+  function finish(fullText){
+    if(done) return;
+    done = true; clearTimeout(timer); thinking.remove();
+    if(!detectBrand(fullText)){
+      /* бренд не нашёлся — второй проход по левому верхнему углу */
+      cropTopLeft(dataUrl, function(crop){
+        if(!crop){ plateResult(fullText); return; }
+        preprocessPhoto(crop, function(prepared){
+          Tesseract.recognize(prepared, "eng", {logger:function(){}})
+            .then(function(res2){
+              plateResult(fullText + "\n" + (res2.data.text||""));
+            })
+            .catch(function(){ plateResult(fullText); });
+        });
+      });
+      return;
+    }
+    plateResult(fullText);
+  }
   loadTesseract(function(err){
     if(done) return;
     if(err){
@@ -5201,11 +5238,7 @@ function ocrPlate(dataUrl){
     }
     preprocessPhoto(dataUrl, function(prepared){
       Tesseract.recognize(prepared, "eng", {logger:function(){}})
-        .then(function(res){
-          if(done) return;
-          done = true; clearTimeout(timer); thinking.remove();
-          plateResult(res.data.text || "");
-        })
+        .then(function(res){ finish(res.data.text || ""); })
         .catch(function(){
           if(done) return;
           done = true; clearTimeout(timer); thinking.remove();
@@ -5236,6 +5269,17 @@ function manualEntryChips(chips){
   };
   row.appendChild(b);
   return row;
+}
+
+function detectBrand(text){
+  const low = text.replace(/\s+/g," ").toLowerCase();
+  for(let i=0;i<PHOTO_BRANDS.length;i++){
+    const p = PHOTO_BRANDS[i];
+    for(let j=0;j<p[1].length;j++){
+      if(new RegExp(p[1][j],"i").test(low)) return p[0];
+    }
+  }
+  return null;
 }
 
 function plateResult(text){
