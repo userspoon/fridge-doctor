@@ -4928,6 +4928,8 @@ function startFlowVariant(fid, vi, chips){
   const v = KB.flows[fid].variants[vi];
   state.flowId = fid;
   state.symptom = v.label;
+  state.answers = [];
+  state.inputCb = null;
   state.vars = { complaint: v.vars.complaint };
   const wrap = el("<div></div>");
   wrap.appendChild(el("<div>Понял вас так — сценарий: <strong>"+esc(v.label)+"</strong>.<br>"+
@@ -4950,6 +4952,9 @@ function startFlow(flowId, chips){
   if(chips) disableChips(chips);
   state.flowId = flowId;
   state.symptom = KB.flows[flowId].symptom;
+  state.answers = [];
+  state.vars = {};
+  state.inputCb = null;
   const wrap = el("<div></div>");
   wrap.appendChild(el("<div>Понял вас так — сценарий: <strong>"+esc(state.symptom)+"</strong>. Отвечайте кнопками — я буду сужать круг причин.<br>"+
     '<div class="hint-red" style="margin-top:8px">⚖️ Это инструмент помощи, а не готовый диагноз: бот не всегда верен и не думает за мастера. Версии — только подсказки, решение и ответственность всегда за специалистом.</div></div>'));
