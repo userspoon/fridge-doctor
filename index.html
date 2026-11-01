@@ -263,7 +263,6 @@
     <div class="logo">❄️ Холодильник<span>Доктор</span></div>
     <nav>
       <button id="btnNew">🔧 Диагностика</button>
-      <button id="btnPhoto">📷 Фото</button>
       <button id="btnRef">📖 Справочник</button>
       <button id="btnSafe">⚠️ Безопасность</button>
       <button id="btnTeach">🎓 Обучение</button>
@@ -4347,7 +4346,9 @@ document.getElementById("btnService").onclick = openService;
 document.getElementById("serviceBack").onclick = function(){ document.getElementById("service").classList.remove("open"); };
 
 document.getElementById("btnCodes").onclick = function(){ openCodes(""); };
+/* фото-вход отключён: код сохранён, для возврата добавьте кнопку btnPhoto в шапку
 document.getElementById("btnPhoto").onclick = function(){ addUser("📷 Фото"); showPhotoMenu(); };
+*/
 document.getElementById("codesBack").onclick = function(){ document.getElementById("codes").classList.remove("open"); };
 document.getElementById("codeSearch").oninput = renderCodes;
 
