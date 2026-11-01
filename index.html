@@ -4693,10 +4693,29 @@ function thermoCard(){
 }
 const THERMO_CAUSE_IDS = {thermostat:1, defrost_timer:1};
 
+/* фильтр версий по типу управления */
+const MECH_EXCLUDED = {temp_sensor:1, evap_sensor_hk:1, control_board:1, defrost_sensor:1};
+function causeAllowed(id){
+  const c = state.vars.control;
+  if(c === "electronic" && id === "thermostat") return false;
+  if(c === "mechanic" && MECH_EXCLUDED[id]) return false;
+  return true;
+}
+
 function showResult(resId){
   const r = KB.results[resId];
   if(!r){ botSay("⚠️ Результат «"+esc(resId)+"» не найден — проверьте базу знаний в редакторе."); return; }
   if(!state._logged){ state._logged = true; fdLog(r); }
+  /* механика + один мотор + не включается: ровно три кандидата */
+  let causeList = r.causes || [];
+  if(resId === "R_thermostat_no_start" && state.vars.control === "mechanic" && state.vars.compressor !== "2"){
+    causeList = [
+      {id:"thermostat", ch:"high"},
+      {id:"compressor_windings", ch:"mid"},
+      {id:"start_relay", ch:"mid"}
+    ];
+  }
+  causeList = causeList.filter(function(ref){ return causeAllowed(ref.id); });
   const wrap = el("<div></div>");
   wrap.appendChild(el('<div class="res-intro"><strong>🔎 '+esc(r.t)+"</strong><br>"+esc(r.intro||"")+"</div>"));
   if(resId === "R_thermostat_no_start" && state.vars.control === "mechanic"){
@@ -4708,11 +4727,11 @@ function showResult(resId){
   if(state.vars.compressor === "2" && (resId === "R_cap_hk" || resId === "R_dry_hk" || resId === "R_partial_leak")){
     wrap.appendChild(el('<div class="ed-note" style="margin-top:8px">ℹ️ По опросу холодильник двухкомпрессорный: проблема локализована в контуре холодильной камеры — проверяйте его испаритель, капилляр и собственный термостат/датчик отдельно от морозильного контура.</div>'));
   }
-  (r.causes||[]).forEach(function(ref){ wrap.appendChild(causeCard(ref)); });
-  if((r.causes||[]).some(function(ref){ return SENSOR_CAUSE_IDS[ref.id]; })){
+  causeList.forEach(function(ref){ wrap.appendChild(causeCard(ref)); });
+  if(causeList.some(function(ref){ return SENSOR_CAUSE_IDS[ref.id]; })){
     wrap.appendChild(sensorTableCard());
   }
-  if((r.causes||[]).some(function(ref){ return THERMO_CAUSE_IDS[ref.id]; })){
+  if(causeList.some(function(ref){ return THERMO_CAUSE_IDS[ref.id]; })){
     wrap.appendChild(thermoCard());
   }
   const chips = el('<div class="chips"></div>');
