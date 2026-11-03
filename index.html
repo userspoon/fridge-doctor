@@ -384,7 +384,7 @@ const BUILTIN = {
     "Учесть компоновку: блок питания бывает отдельной платой, встроенным в модуль инвертора или в основную плату; в старых моделях — отдельный трансформатор, иногда размещён отдельно, например у мотора",
     "Пример: у Samsung серии RB блок питания стоит на модуле инвертора — отдельной платы нет, проверяется и меняется инвертор"
    ],
-   "fix": "Ремонт или замена блока питания (или платы, в которую он встроен)."
+   "fix": "Замена блока питания или узла, в который он встроен."
   },
   "mains_filter": {
    "t": "Сетевой фильтр помех (плата на входе)",
@@ -397,7 +397,7 @@ const BUILTIN = {
     "Прозвонить предохранитель и дорожки платы фильтра",
     "Если предохранитель сгорел — обязательно искать причину дальше по цепи"
    ],
-   "fix": "Замена предохранителя или ремонт платы фильтра с последующей проверкой всей цепи.",
+   "fix": "Замена сетевого фильтра с последующей проверкой всей цепи.",
    "warn": "Выход из строя — редкость: не спешите с этим диагнозом, сначала перепроверьте шнур, клеммы и соединения."
   },
   "demo_mode": {
@@ -461,11 +461,8 @@ const BUILTIN = {
     "Замер питающих напряжений по сервис-мануалу",
     "Модуль проверяют последним — сначала исключают датчики, вентиляторы, ТЭН"
    ],
-   "fix": "Ремонт или замена модуля. В инверторных моделях бывает отдельный инверторный блок — диагностика по сервисной документации.",
-   "prc": [
-    "Ремонт модуля — самый частый подтверждённый исход при «не включается» и при ошибках/сбоях индикации в реальных заявках.",
-    "При «щёлкает» модуль по реальным заявкам выходит почти наравне с реле и мотором — не списывайте всё на пусковое реле."
-   ]
+   "fix": "Замена модуля. В инверторных моделях бывает отдельный инверторный блок — диагностика по сервисной документации.",
+   "prc": []
   },
   "start_relay": {
    "t": "Пусковое реле компрессора (позистор)",
@@ -661,7 +658,7 @@ const BUILTIN = {
     "Вал можно провернуть вручную (шпилькой) и перевести в оттайку: если ТЭН при этом греет, а сам таймер не ходит — менять таймер",
     "Электронные схемы диагностируются по сервис-мануалу"
    ],
-   "fix": "Замена таймера или ремонт модуля управления.",
+   "fix": "Замена таймера или модуля управления.",
    "prc": [
     "Замена таймера — частый подтверждённый исход при обмерзании испарителя в No Frost с механикой."
    ]
@@ -727,7 +724,7 @@ const BUILTIN = {
    ],
    "checks": [
     "Перезапуск: выключите холодильник из сети на 10 минут и включите — при старте (приоритет обычно у холодильной камеры) клапан должен щёлкнуть, переключившись на её контур",
-    "Прямая проверка бистабильного клапана: при выключенном из сети холодильнике отсоедините разъём клапана и проверочным проводом через диод поочерёдно подсоединяйте к катушке, меняя направление тока — при каждой смене полярности клапан должен перещёлкиваться",
+    "Проверить управление бистабильным клапаном по сервисной схеме конкретной модели.",
     "Замер сопротивления катушки мультиметром: обрыв — катушка сгорела (у исправной обычно единицы–десятки кОм)",
     "Клапан сам перещёлкивается, но холода в камере нет — проверьте, приходят ли управляющие импульсы с модуля на разъём клапана",
     "Управление приходит и катушка целая, а контур не холодит — клапан заклинил механически или засор за ним"
@@ -1025,6 +1022,17 @@ const BUILTIN = {
     "Замер сопротивления при двух температурах, сверка с таблицей модели"
    ],
    "fix": "Замена датчика — недорогая деталь, меняется по разборке модели."
+  },
+  "compressor_confirmed": {
+   "t": "Неисправность компрессора подтверждена проверкой",
+   "lvl": 3,
+   "signs": [
+    "Мастер подтвердил неисправность мотора-компрессора проверкой."
+   ],
+   "checks": [
+    "Уточнить вид дефекта по результатам проверки запуска, обмоток, изоляции и производительности."
+   ],
+   "fix": "Устранение подтверждённой неисправности или замена компрессора по результатам проверки."
   }
  },
  "flows": {
@@ -1474,7 +1482,7 @@ const BUILTIN = {
     },
     "valve_hk": {
      "q": "Проверим цепочку клапана. Выключите холодильник из сети, подождите 10 минут и включите снова: сразу после включения клапан должен щёлкнуть и переключиться на контур холодильной камеры (при старте приоритет обычно у камеры). Есть ли щелчок переключения клапана после включения?",
-     "hint": "Прямая проверка бистабильного клапана: при выключенном из сети холодильнике отсоедините разъём клапана и проверочным проводом через диод поочерёдно подсоединяйте к катушке, меняя направление тока — при каждой смене полярности исправный клапан должен перещёлкиваться (слышен щелчок).",
+     "hint": "Проверить управление бистабильным клапаном по сервисной схеме конкретной модели.",
      "opts": [
       {
        "t": "Клапан щёлкает и переключается, но камера всё равно тёплая",
@@ -1572,7 +1580,11 @@ const BUILTIN = {
      ]
     },
     "none_2m": {
-     "only_if": {"var": "compressor", "val": "2", "else": "res_cap_all"},
+     "only_if": {
+      "var": "compressor",
+      "val": "2",
+      "else": "res_cap_all"
+     },
      "q": "Двухмоторный: контуры ХК и МК независимы, одновременный отказ обоих — редкость. Морозилка точно не работает?",
      "hint": "Света в МК нет, так что оценивайте по признакам: продукты подтаяли, инея на испарителе/стенках нет, из каналов не дует холод (если МК — No Frost, поднести руку к выходу воздуховода при закрытой двери). Также убедитесь, что МК не отключена кнопкой/режимом — у электронных моделей бывает отключение морозилки.",
      "opts": [
@@ -1594,7 +1606,11 @@ const BUILTIN = {
      ]
     },
     "none_2m_nf": {
-     "only_if": {"var": "compressor", "val": "2", "else": "nf_elec_chain"},
+     "only_if": {
+      "var": "compressor",
+      "val": "2",
+      "else": "nf_elec_chain"
+     },
      "q": "Двухмоторный: контуры ХК и МК независимы, одновременный отказ обоих — редкость. Морозилка точно не работает?",
      "hint": "Света в МК нет, так что оценивайте по признакам: продукты подтаяли, инея на испарителе/стенках нет, из каналов не дует холод (если МК — No Frost, поднести руку к выходу воздуховода при закрытой двери). Также убедитесь, что МК не отключена кнопкой/режимом — у электронных моделей бывает отключение морозилки.",
      "opts": [
@@ -1840,22 +1856,19 @@ const BUILTIN = {
      ]
     },
     "motor_relay_check": {
-     "q": "Проверьте мотор и п/з: подключите мотор через свой проверочный провод и заведомо исправное реле, замерьте ток клещами. Ток: на R600a — не более 1 А, на R134a — не более 1,4 А, на R12 — не более 1,5 А (выше — неисправен мотор). Затем прозвоните родное п/з мультиметром — сопротивление должно быть не более 50 Ом, после включите его к мотору через проверочный провод. Что вышло?",
+     "q": "Проверили исправность мотора и пускозащитного реле?",
+     "hint": "Исправность мотора и п/з проверяется отдельно по методике модели.",
      "opts": [
       {
-       "t": "Мотор неисправен (ток выше нормы / обмотки в обрыве)",
-       "a": "Мотор неисправен",
-       "res": "R_motor_relay_fault"
+       "t": "Мотор неисправен",
+       "res": "R_checked_motor"
       },
       {
-       "t": "П/з неисправно (не звонится / развалилось)",
-       "a": "П/з неисправно",
-       "res": "R_motor_relay_fault"
+       "t": "П/з неисправно",
+       "res": "R_checked_relay"
       },
       {
-       "t": "Мотор и п/з исправны — идём дальше",
-       "a": "Мотор и п/з исправны",
-       "set": {"motor_ok": "1"},
+       "t": "Оба проверены и исправны",
        "next": "display"
       }
      ]
@@ -1882,19 +1895,25 @@ const BUILTIN = {
       {
        "t": "Плачущая (капельная)",
        "a": "Тип: капельная",
-       "set": {"type": "cap"},
+       "set": {
+        "type": "cap"
+       },
        "res": "R_thermostat_no_start"
       },
       {
        "t": "No Frost",
        "a": "Тип: No Frost",
-       "set": {"type": "nofrost"},
+       "set": {
+        "type": "nofrost"
+       },
        "res": "R_thermostat_no_start"
       },
       {
        "t": "С переключающим клапаном (один мотор, два контура)",
        "a": "Тип: с клапаном",
-       "set": {"type": "valve"},
+       "set": {
+        "type": "valve"
+       },
        "res": "R_thermostat_no_start"
       }
      ]
@@ -2415,7 +2434,7 @@ const BUILTIN = {
   },
   "R_control_no_start": {
    "t": "Питание есть, но команда на пуск не формируется",
-   "intro": "Свет и дисплей работают, реле не щёлкает. Важно: тишина реле — ещё не повод выводить только «нет команды»: реле могло развалиться, а мотор — быть в обрыве. Сначала проверьте мотор и реле, дальше идите по алгоритму. Порядок: 1) мотор проверить своим (заведомо исправным) реле и своим проверочным проводом, ток замерить клещами; ток на R600a — не более 1 А, на R134a — не более 1,4 А, на R12 — не более 1,5 А. Ток выше — неисправность в моторе. 2) Мотор исправен — прозвонить родное реле мультиметром: сопротивление должно быть не более 50 Ом; затем включить родное реле к мотору через проверочный провод. 3) Мотор и реле исправны — диагностика идёт дальше по алгоритму: датчики, модуль.",
+   "intro": "Проверьте цепь управления пуском по схеме модели с учётом результатов отдельных проверок мотора и пускозащитного реле.",
    "causes": [
     {
      "id": "compressor_windings",
@@ -2453,7 +2472,7 @@ const BUILTIN = {
     {
      "id": "control_board",
      "ch": "high",
-     "note": "Мигание света — признак нестабильного питания от платы: модуль в ремонт или замену."
+     "note": "Мигание света — признак нестабильного питания от платы: проверить модуль как узел."
     },
     {
      "id": "psu",
@@ -2785,7 +2804,7 @@ const BUILTIN = {
     {
      "id": "control_board",
      "ch": "high",
-     "note": "Замерьте напряжение, которое модуль выдаёт на компрессор: просадка при пуске (например, до 170 В) не даёт ему стартовать — модуль в ремонт или замену."
+     "note": "Замерьте напряжение, которое модуль выдаёт на компрессор: просадка при пуске (например, до 170 В) не даёт ему стартовать — проверить модуль как узел."
     },
     {
      "id": "start_relay",
@@ -3618,6 +3637,40 @@ const BUILTIN = {
      "note": "После разморозки проверьте крыльчатку и мотор вентилятора (подмена для 3/4-проводных)."
     }
    ]
+  },
+  "R_checked_motor": {
+   "t": "Проверкой подтверждена неисправность мотора",
+   "intro": "Вывод основан на результатах проверки мастером. После устранения проверьте запуск и восстановление холода.",
+   "causes": [
+    {
+     "id": "compressor_confirmed",
+     "ch": "high"
+    }
+   ]
+  },
+  "R_checked_relay": {
+   "t": "Проверкой подтверждена неисправность п/з",
+   "intro": "Вывод основан на результатах проверки мастером. После устранения проверьте запуск и восстановление холода.",
+   "causes": [
+    {
+     "id": "start_relay",
+     "ch": "high"
+    }
+   ]
+  },
+  "R_checked_both": {
+   "t": "Проверкой подтверждены неисправности мотора и п/з",
+   "intro": "Вывод основан на результатах проверки мастером. После устранения проверьте запуск и восстановление холода.",
+   "causes": [
+    {
+     "id": "compressor_confirmed",
+     "ch": "high"
+    },
+    {
+     "id": "start_relay",
+     "ch": "high"
+    }
+   ]
   }
  }
 };
@@ -3632,8 +3685,10 @@ function loadKB(){
     const raw = localStorage.getItem(LS_KEY);
     if(raw){
       const d = JSON.parse(raw);
-      if(d && d.causes && d.flows && d.results && d.ver === FD_KB_VER){
+      if(d && d.causes && d.flows && d.results && (d.v === FD_KB_VER || d.ver === FD_KB_VER)){
         KB = {causes:d.causes, flows:d.flows, results:d.results};
+        KB.causes.compressor_confirmed = BUILTIN.causes.compressor_confirmed;
+        ["R_checked_motor", "R_checked_relay", "R_checked_both"].forEach(function(id){ KB.results[id] = BUILTIN.results[id]; });
         return true;
       }
     }
@@ -3689,7 +3744,7 @@ const REF_SECTIONS = [
   "Сколько компрессоров — по шильдику: одна доза хладагента = один компрессор, две дозы = два компрессора.",
   "Дата производства LG: первая цифра серийника — год, две следующие — месяц выпуска.",
   "Проверка давления через проколку — с учётом хладагента: на R134a разрежение −0,3 бар при работающем компрессоре — признак засора; на R600a −0,3 — почти норма, а ниже −0,4 — засор или утечка на стороне высокого давления (некоторые Bosch/Liebherr/Electrolux на R600 работают при −0,6).",
-  "«Неисправный модуль» до поездки в ремонт: прозвоните шлейф от основной платы к дисплею (петля в двери) и разъёмы — обрыв в петле имитирует смерть модуля."
+  "До вывода о неисправности модуля: прозвоните шлейф от основной платы к дисплею (петля в двери) и разъёмы — обрыв в петле имитирует смерть модуля."
  ]},
  {h:"Атлант: эл. терморегулятор ЕТ46-х — «шуба не оттаивает»", items:[
   "Рекомендация при «шуба на испарителе не оттаивает»: установить настройку №4, температуру оставить +4 °C (или +6). Проверить цикличность компрессора при контроле температуры на датчике; при нецикличной работе — сопротивление датчика по таблице (погрешность датчиков ±1 °C). Если датчик соответствует таблице — проверить, отключает ли эл. терморегулятор компрессор через 9 часов. Не помогло — повторная замена терморегулятора.",
@@ -3712,7 +3767,7 @@ const SAFETY = [
  {h:"⚡ Электричество", items:[
   "Перед любыми работами — вынуть вилку из розетки.",
   "Не работать мокрыми руками, не ставить холодильник рядом с водой.",
-  "На плате управления могут быть заряженные конденсаторы — не трогать плату без необходимости."
+  "Не касаться открытых электронных узлов: остаточный заряд может сохраняться после отключения питания."
  ]},
  {h:"🔥 Хладагент R600a — горючий!", items:[
   "Большинство современных холодильников заправлены изобутаном R600a.",
@@ -3877,7 +3932,7 @@ const ERROR_CODES = {
     ["DF","Дверь холодильника открыта слишком долго; если сигнал не исчезает после закрытия — неисправен датчик положения двери"],
     ["PF","Сбой электропитания: скачок напряжения или кратковременное отключение; может потребоваться сброс ошибки"]
   ],
-  notes:["Schaub Lorenz — в основном электронное управление; из практики: мигающий свет при мёртвом моторе — почерк неисправного модуля управления, модуль меняется/ремонтируется первым делом (рабочий кейс в базе — 3 года)."]
+  notes:["Schaub Lorenz — в основном электронное управление; из практики: мигающий свет при мёртвом моторе — почерк неисправного модуля управления, модуль проверяется после проверки мотора и питания (рабочий кейс в базе — 3 года)."]
 },
 "Samsung":{
   codes:[
@@ -4437,7 +4492,7 @@ const SERVICE = [
   "Демо-режим (витрина): «Быстрая заморозка» + «Температура МК» держать 8 сек до «динь-дон»; выход — те же кнопки 8 сек. В демо всё работает, кроме компрессора, оттайки нет."
  ], rows:[]},
 {t:"LG: ошибки инвертора — таблица морганий светодиода на плате", entry:[
-  "Моргания светодиода на основной плате. В любом случае: перезапуск; при повторении — проверять по общему методу (обмотки компрессора с основной платы; напряжение с платы до конденсатора и после; ток потребления; напряжение на фишке компрессора)."
+  "Моргания светодиода на основной плате. В любом случае: перезапуск; при повторении — проверять по общему методу (обмотки компрессора с основной платы; напряжение питания и ток потребления; напряжение на разъёме компрессора)."
  ], rows:[
   ["1 моргание","Дефект PCB (Micom), входное напряжение не соответствует — заменить плату при повторе"],
   ["2 моргания","Некорректная нагрузка на компрессоре, нет контакта, обрыв обмотки (компрессоры FC/FLC). Проверить контакт, прозвонить проводку, конденсатор в цепи питания; ток и напряжение на компрессоре"],
@@ -4740,6 +4795,119 @@ function fdLog(r){
 /* ============================================================
    ДВИЖОК ДИАГНОСТИКИ
 ============================================================ */
+/* BEGIN REPAIR EXPERIENCE */
+const REPAIR_EXPERIENCE = {"source":"мои_заявки_01_10_19.xlsx","schema":1,"aliases":{"indesit":["индезит","indesit"],"stinol":["стинол","stinol"],"atlant":["атлант","atlant"],"samsung":["самсунг","samsung"],"lg":["элджи","lg","лж"],"bosch":["бош","bosch"],"biryusa":["бирюса"],"liebherr":["либхер","liebherr"],"beko":["беко","beko"],"ariston":["аристон","ariston","hotpoint"],"electrolux":["электролюкс","electrolux"],"gorenje":["горенье","gorenje"],"whirlpool":["вирпул","whirlpool"],"nord":["норд","nord"],"pozis":["позис","pozis"],"saratov":["саратов"],"sharp":["шарп","sharp"],"haier":["хайер","haier"],"siemens":["сименс","siemens"],"snaige":["снайге","snaige"],"zanussi":["занусси","zanussi"],"aeg":["аег","aeg"],"ardo":["ардо","ardo"]},"categories":{"recharge":{"label":"Подтверждённая утечка — перезарядка / контур","causes":["freon_leak_full","freon_leak_partial"],"check":"В журнале мастера «перезарядка» и «контур» означают подтверждённую утечку с успешным ремонтом. В текущей диагностике проверить герметичность и локализовать утечку."},"leak":{"label":"Устранение утечки","causes":["freon_leak_full","freon_leak_partial"],"check":"Проверить герметичность контура и локализовать утечку до заправки."},"capillary":{"label":"Устранение засора капилляра","causes":["capillary_block"],"check":"Проверить признаки ограничения потока в капиллярной трубке; отличить от недостатка хладагента."},"thermostat":{"label":"Работы с термостатом","causes":["thermostat"],"check":"На механическом управлении проверить термостат и его цепь."},"relay":{"label":"Замена пускозащитного реле","causes":["start_relay"],"check":"Проверить пускозащитное реле и обмотки компрессора, различить неисправность реле и мотора."},"compressor":{"label":"Замена компрессора","causes":[],"check":"Проверить запуск и производительность компрессора; его замена не уточняет вид неисправности."},"heater":{"label":"Замена ТЭНа / плавкого предохранителя","causes":["defrost_heater"],"check":"При No Frost проверить цепь нагревателя и плавкого предохранителя."},"defrost_sensor":{"label":"Замена дефростера","causes":["defrost_sensor"],"check":"При No Frost проверить дефростер с учетом температуры испарителя."},"timer":{"label":"Замена таймера","causes":["defrost_timer"],"check":"Проверить переключение таймера и цикл оттайки."},"sensor":{"label":"Замена датчика","causes":[],"check":"Уточнить, какой датчик заменяли; измерить сопротивление при известной температуре по документации модели."},"fan":{"label":"Работы с вентилятором","causes":["evap_fan"],"check":"Проверить вращение вентилятора, питание и прохождение воздуха."},"drain":{"label":"Прочистка слива","causes":["drain_clogged"],"check":"Проверить проходимость дренажа и отвод воды."},"seal":{"label":"Замена уплотнителя","causes":["door_seal"],"check":"Проверить прилегание уплотнителя по периметру двери."},"door":{"label":"Ремонт двери","causes":["door_misaligned"],"check":"Проверить положение двери и петли."},"defrost":{"label":"Разморозка","causes":[],"check":"Проверить повторное обмерзание и причину; разморозка сама по себе не подтверждает ремонт."}},"groups":[{"brand":"indesit","symptom":"ice","total":5,"works":{"recharge":3,"capillary":2}},{"brand":"unknown","symptom":"all_full","total":61,"works":{"heater":4,"compressor":15,"relay":13,"defrost_sensor":1,"timer":3,"recharge":10,"thermostat":16,"capillary":2,"leak":1}},{"brand":"unknown","symptom":"mk_full","total":43,"works":{"recharge":22,"defrost_sensor":1,"timer":1,"relay":3,"compressor":12,"capillary":2,"fan":2,"door":1}},{"brand":"stinol","symptom":"clicks","total":5,"works":{"relay":2,"compressor":3}},{"brand":"unknown","symptom":"hk_full","total":109,"works":{"capillary":11,"heater":4,"thermostat":78,"recharge":3,"drain":1,"compressor":3,"defrost_sensor":2,"timer":5,"fan":1,"defrost":1,"sensor":1}},{"brand":"unknown","symptom":"clicks","total":6,"works":{"relay":3,"compressor":2,"recharge":1}},{"brand":"unknown","symptom":"water","total":9,"works":{"drain":8,"heater":1}},{"brand":"stinol","symptom":"no_start","total":34,"works":{"compressor":2,"thermostat":22,"heater":6,"relay":3,"drain":1,"fan":1}},{"brand":"unknown","symptom":"no_start","total":28,"works":{"relay":5,"thermostat":14,"compressor":4,"timer":2,"heater":1,"drain":1,"capillary":1}},{"brand":"stinol","symptom":"hk_full","total":49,"works":{"relay":4,"recharge":14,"compressor":5,"capillary":6,"thermostat":20,"sensor":1}},{"brand":"stinol","symptom":"mk_full","total":31,"works":{"recharge":9,"capillary":1,"heater":9,"fan":3,"relay":5,"thermostat":1,"compressor":5}},{"brand":"unknown","symptom":"all_weak","total":10,"works":{"drain":1,"capillary":2,"recharge":2,"compressor":2,"thermostat":2,"timer":1}},{"brand":"unknown","symptom":"mk_weak","total":1,"works":{"capillary":1}},{"brand":"stinol","symptom":"all_full","total":52,"works":{"compressor":7,"heater":8,"thermostat":23,"relay":5,"defrost_sensor":4,"timer":1,"recharge":5,"capillary":2,"drain":1}},{"brand":"unknown","symptom":"too_cold","total":8,"works":{"recharge":3,"defrost_sensor":1,"sensor":1,"thermostat":2,"capillary":1}},{"brand":"unknown","symptom":"noise","total":1,"works":{"heater":1,"timer":1}},{"brand":"atlant","symptom":"hk_full","total":40,"works":{"thermostat":4,"capillary":15,"relay":8,"recharge":7,"compressor":3,"heater":2,"fan":1}},{"brand":"lg","symptom":"water","total":1,"works":{"drain":1}},{"brand":"samsung","symptom":"hk_full","total":36,"works":{"fan":6,"heater":11,"sensor":14,"leak":2,"defrost":2,"drain":3,"capillary":1,"timer":1}},{"brand":"nord","symptom":"all_full","total":2,"works":{"relay":2}},{"brand":"bosch","symptom":"all_full","total":8,"works":{"recharge":1,"compressor":2,"drain":1,"thermostat":3,"defrost_sensor":1}},{"brand":"ariston","symptom":"all_full","total":13,"works":{"compressor":2,"timer":1,"recharge":5,"capillary":1,"defrost_sensor":1,"drain":1,"fan":1,"thermostat":1}},{"brand":"bosch","symptom":"hk_full","total":8,"works":{"compressor":3,"thermostat":5}},{"brand":"electrolux","symptom":"hk_full","total":23,"works":{"recharge":3,"thermostat":19,"relay":1}},{"brand":"atlant","symptom":"mk_full","total":27,"works":{"relay":3,"recharge":13,"capillary":4,"compressor":6,"thermostat":1}},{"brand":"liebherr","symptom":"no_start","total":2,"works":{"thermostat":2}},{"brand":"whirlpool","symptom":"hk_full","total":6,"works":{"recharge":1,"drain":2,"door":1,"relay":1,"defrost":1}},{"brand":"ariston","symptom":"hk_full","total":18,"works":{"capillary":2,"recharge":8,"defrost":1,"defrost_sensor":2,"timer":2,"sensor":3}},{"brand":"samsung","symptom":"all_full","total":33,"works":{"capillary":1,"heater":4,"timer":4,"compressor":11,"relay":6,"fan":2,"recharge":4,"defrost_sensor":1,"drain":2,"thermostat":1}},{"brand":"samsung","symptom":"clicks","total":3,"works":{"compressor":3}},{"brand":"indesit","symptom":"water","total":4,"works":{"drain":3,"door":1}},{"brand":"atlant","symptom":"all_full","total":23,"works":{"compressor":7,"drain":2,"relay":6,"leak":1,"sensor":1,"thermostat":5,"fan":1,"recharge":1}},{"brand":"gorenje","symptom":"no_start","total":1,"works":{"compressor":1}},{"brand":"bosch","symptom":"no_start","total":4,"works":{"relay":1,"thermostat":2,"drain":1}},{"brand":"electrolux","symptom":"no_start","total":1,"works":{"recharge":1}},{"brand":"beko","symptom":"hk_full","total":1,"works":{"recharge":1}},{"brand":"indesit","symptom":"all_full","total":37,"works":{"timer":3,"recharge":12,"relay":1,"compressor":10,"defrost_sensor":4,"fan":3,"capillary":2,"thermostat":3,"drain":1}},{"brand":"indesit","symptom":"no_start","total":8,"works":{"compressor":4,"defrost":1,"timer":1,"thermostat":1,"recharge":1}},{"brand":"stinol","symptom":"ice","total":7,"works":{"recharge":3,"capillary":4,"defrost_sensor":1}},{"brand":"biryusa","symptom":"all_full","total":6,"works":{"compressor":2,"recharge":2,"thermostat":1,"relay":1}},{"brand":"ariston","symptom":"mk_full","total":13,"works":{"recharge":10,"compressor":2,"capillary":1}},{"brand":"samsung","symptom":"mk_weak","total":2,"works":{"sensor":1,"recharge":1}},{"brand":"pozis","symptom":"mk_full","total":1,"works":{"recharge":1}},{"brand":"ariston","symptom":"water","total":3,"works":{"recharge":1,"drain":2}},{"brand":"indesit","symptom":"hk_full","total":42,"works":{"timer":8,"recharge":12,"defrost_sensor":12,"thermostat":1,"compressor":1,"capillary":2,"defrost":1,"fan":2,"heater":1,"sensor":3}},{"brand":"bosch","symptom":"mk_full","total":8,"works":{"compressor":4,"relay":2,"recharge":2}},{"brand":"indesit","symptom":"clicks","total":4,"works":{"compressor":4}},{"brand":"indesit","symptom":"too_cold","total":3,"works":{"timer":1,"fan":1,"defrost_sensor":1}},{"brand":"ardo","symptom":"hk_full","total":2,"works":{"recharge":2,"capillary":1}},{"brand":"electrolux","symptom":"all_full","total":9,"works":{"recharge":4,"compressor":2,"capillary":2,"thermostat":1}},{"brand":"sharp","symptom":"all_full","total":11,"works":{"relay":4,"compressor":2,"defrost_sensor":2,"fan":1,"recharge":1,"heater":1,"timer":2}},{"brand":"lg","symptom":"all_full","total":11,"works":{"compressor":3,"recharge":2,"timer":3,"sensor":1,"defrost_sensor":1,"fan":1}},{"brand":"lg","symptom":"no_start","total":3,"works":{"relay":1,"heater":1,"timer":1}},{"brand":"ariston","symptom":"too_cold","total":1,"works":{"capillary":1}},{"brand":"electrolux","symptom":"all_weak","total":2,"works":{"recharge":1,"thermostat":1}},{"brand":"atlant","symptom":"ice","total":11,"works":{"capillary":7,"relay":1,"recharge":2,"thermostat":1,"drain":1}},{"brand":"stinol","symptom":"too_cold","total":6,"works":{"recharge":1,"capillary":3,"fan":1,"defrost":1,"thermostat":1}},{"brand":"atlant","symptom":"all_weak","total":4,"works":{"capillary":2,"recharge":1,"thermostat":1}},{"brand":"biryusa","symptom":"all_weak","total":1,"works":{"recharge":1,"capillary":1}},{"brand":"nord","symptom":"hk_full","total":1,"works":{"compressor":1}},{"brand":"lg","symptom":"all_weak","total":2,"works":{"fan":1,"recharge":1,"capillary":1}},{"brand":"indesit","symptom":"mk_full","total":11,"works":{"timer":1,"recharge":4,"compressor":2,"thermostat":2,"fan":2}},{"brand":"pozis","symptom":"all_full","total":1,"works":{"timer":1}},{"brand":"ariston","symptom":"no_start","total":1,"works":{"recharge":1}},{"brand":"liebherr","symptom":"mk_full","total":4,"works":{"recharge":2,"defrost":1,"drain":1}},{"brand":"pozis","symptom":"no_start","total":1,"works":{"compressor":1}},{"brand":"samsung","symptom":"ice","total":9,"works":{"drain":9}},{"brand":"electrolux","symptom":"clicks","total":1,"works":{"compressor":1}},{"brand":"atlant","symptom":"no_start","total":12,"works":{"compressor":2,"capillary":1,"thermostat":5,"relay":3,"recharge":1}},{"brand":"zanussi","symptom":"all_full","total":4,"works":{"recharge":2,"relay":2}},{"brand":"ariston","symptom":"noise","total":3,"works":{"recharge":1,"defrost":1,"heater":1}},{"brand":"atlant","symptom":"too_cold","total":4,"works":{"compressor":1,"recharge":1,"capillary":2}},{"brand":"biryusa","symptom":"clicks","total":1,"works":{"compressor":1}},{"brand":"sharp","symptom":"no_start","total":4,"works":{"heater":3,"defrost_sensor":2,"timer":2,"compressor":1}},{"brand":"zanussi","symptom":"hk_full","total":1,"works":{"door":1}},{"brand":"ariston","symptom":"clicks","total":2,"works":{"compressor":2}},{"brand":"stinol","symptom":"water","total":4,"works":{"heater":2,"thermostat":1,"drain":1}},{"brand":"electrolux","symptom":"mk_full","total":6,"works":{"relay":1,"compressor":1,"thermostat":2,"recharge":1,"fan":1}},{"brand":"whirlpool","symptom":"all_full","total":4,"works":{"compressor":1,"relay":1,"thermostat":1,"fan":1}},{"brand":"stinol","symptom":"noise","total":1,"works":{"drain":1}},{"brand":"samsung","symptom":"mk_full","total":6,"works":{"compressor":2,"recharge":2,"relay":1,"heater":1}},{"brand":"samsung","symptom":"noise","total":1,"works":{"timer":1}},{"brand":"electrolux","symptom":"water","total":1,"works":{"drain":1}},{"brand":"beko","symptom":"all_full","total":5,"works":{"thermostat":1,"drain":2,"compressor":1,"recharge":1}},{"brand":"beko","symptom":"no_start","total":1,"works":{"compressor":1}},{"brand":"ardo","symptom":"no_start","total":1,"works":{"thermostat":1}},{"brand":"ariston","symptom":"ice","total":2,"works":{"capillary":2}},{"brand":"samsung","symptom":"no_start","total":3,"works":{"defrost_sensor":1,"compressor":2}},{"brand":"nord","symptom":"all_weak","total":1,"works":{"recharge":1}},{"brand":"gorenje","symptom":"hk_full","total":3,"works":{"thermostat":1,"recharge":1,"fan":1}},{"brand":"gorenje","symptom":"mk_full","total":2,"works":{"relay":1,"recharge":1}},{"brand":"liebherr","symptom":"hk_full","total":6,"works":{"recharge":2,"sensor":2,"thermostat":2}},{"brand":"lg","symptom":"ice","total":1,"works":{"drain":1}},{"brand":"lg","symptom":"mk_full","total":7,"works":{"compressor":5,"recharge":1,"timer":1}},{"brand":"liebherr","symptom":"too_cold","total":4,"works":{"leak":2,"sensor":3,"thermostat":1}},{"brand":"sharp","symptom":"mk_full","total":1,"works":{"compressor":1}},{"brand":"whirlpool","symptom":"clicks","total":2,"works":{"relay":1,"compressor":1}},{"brand":"samsung","symptom":"water","total":3,"works":{"drain":3,"sensor":1}},{"brand":"liebherr","symptom":"all_full","total":8,"works":{"recharge":3,"compressor":2,"sensor":2,"leak":1,"heater":1}},{"brand":"sharp","symptom":"clicks","total":1,"works":{"relay":1}},{"brand":"stinol","symptom":"all_weak","total":2,"works":{"capillary":1,"recharge":1}},{"brand":"liebherr","symptom":"water","total":7,"works":{"drain":6,"sensor":1}},{"brand":"aeg","symptom":"too_cold","total":1,"works":{"leak":1,"sensor":1}},{"brand":"whirlpool","symptom":"mk_full","total":2,"works":{"recharge":1,"relay":1,"sensor":1}},{"brand":"liebherr","symptom":"clicks","total":1,"works":{"compressor":1}},{"brand":"sharp","symptom":"hk_full","total":2,"works":{"drain":1,"defrost_sensor":1}},{"brand":"liebherr","symptom":"all_weak","total":4,"works":{"recharge":2,"leak":1,"sensor":2}},{"brand":"samsung","symptom":"all_weak","total":4,"works":{"timer":2,"recharge":1,"heater":1}},{"brand":"indesit","symptom":"all_weak","total":3,"works":{"heater":2,"timer":1,"recharge":1}},{"brand":"whirlpool","symptom":"water","total":1,"works":{"drain":1}},{"brand":"siemens","symptom":"hk_full","total":2,"works":{"compressor":1,"drain":1}},{"brand":"liebherr","symptom":"ice","total":2,"works":{"drain":1,"leak":1,"sensor":1}},{"brand":"atlant","symptom":"water","total":5,"works":{"drain":5}},{"brand":"pozis","symptom":"ice","total":1,"works":{"door":1}},{"brand":"siemens","symptom":"all_full","total":2,"works":{"door":1,"sensor":1}},{"brand":"unknown","symptom":"ice","total":5,"works":{"capillary":2,"recharge":1,"door":1,"drain":1}},{"brand":"ariston","symptom":"all_weak","total":2,"works":{"fan":1,"heater":1}},{"brand":"gorenje","symptom":"water","total":2,"works":{"drain":2}},{"brand":"saratov","symptom":"hk_full","total":1,"works":{"thermostat":1}},{"brand":"aeg","symptom":"water","total":1,"works":{"drain":1}},{"brand":"samsung","symptom":"too_cold","total":1,"works":{"drain":1}},{"brand":"bosch","symptom":"water","total":1,"works":{"drain":1}},{"brand":"siemens","symptom":"mk_full","total":1,"works":{"compressor":1}},{"brand":"lg","symptom":"noise","total":1,"works":{"fan":1}},{"brand":"biryusa","symptom":"water","total":1,"works":{"drain":1}},{"brand":"atlant","symptom":"mk_weak","total":1,"works":{"thermostat":1}},{"brand":"ardo","symptom":"all_weak","total":1,"works":{"drain":1}},{"brand":"biryusa","symptom":"hk_full","total":2,"works":{"drain":1,"capillary":1}},{"brand":"saratov","symptom":"no_start","total":1,"works":{"thermostat":1}},{"brand":"aeg","symptom":"mk_full","total":1,"works":{"recharge":1}},{"brand":"bosch","symptom":"all_weak","total":1,"works":{"sensor":1}},{"brand":"beko","symptom":"noise","total":1,"works":{"fan":1}},{"brand":"indesit","symptom":"noise","total":3,"works":{"fan":2,"compressor":1}},{"brand":"lg","symptom":"hk_full","total":1,"works":{"timer":1}},{"brand":"aeg","symptom":"hk_full","total":1,"works":{"recharge":1}},{"brand":"zanussi","symptom":"mk_full","total":1,"works":{"recharge":1}},{"brand":"zanussi","symptom":"ice","total":1,"works":{"recharge":1}},{"brand":"ardo","symptom":"mk_full","total":1,"works":{"relay":1}},{"brand":"beko","symptom":"all_weak","total":1,"works":{"recharge":1}},{"brand":"snaige","symptom":"all_full","total":1,"works":{"relay":1}},{"brand":"beko","symptom":"water","total":1,"works":{"drain":1}}],"stats":{"sheets":[{"sheet":"01_10_16","populated":1874,"excluded":0},{"sheet":"01_10_19","populated":301,"excluded":0},{"sheet":"01_04_20","populated":1872,"excluded":2205}],"included":1111,"skipped":{"headers":3,"no_completed_repair":1268,"no_complaint":761,"unclassified_work":315,"excluded_electronics":589},"categories":{"recharge":215,"heater":66,"relay":95,"capillary":91,"compressor":165,"defrost_sensor":39,"timer":51,"drain":77,"thermostat":252,"fan":38,"sensor":42,"defrost":10,"door":7,"leak":10}}};
+// Imported experience contains counts and normalized labels, never client notes.
+function experienceBrand(value){
+  const s=String(value||'').toLowerCase().replace(/ё/g,'е');
+  for(const id of Object.keys(REPAIR_EXPERIENCE.aliases)){
+    if(REPAIR_EXPERIENCE.aliases[id].some(a=>new RegExp('(^|[^a-zа-я])'+a).test(s))) return id;
+  }
+  return 'unknown';
+}
+function experienceContext(){
+  const cooling=state.flowId==='not_cooling' || /холода|морозит/.test(state.symptom);
+  let symptom=state.flowId;
+  if(cooling){
+    const c=state.vars.complaint||'none';
+    symptom=({hk_full:'hk_full',hk_weak:'hk_weak',mk_full:'mk_full',mk_weak:'mk_weak',hk:'hk_full',mk:'mk_full',none:'all_full',both:'all_full'})[c]||'all_full';
+  }
+  const brand=experienceBrand(state.vars.model);
+  const all=REPAIR_EXPERIENCE.groups.filter(g=>g.symptom===symptom);
+  const specific=all.filter(g=>g.brand===brand && brand!=='unknown');
+  const specificN=specific.reduce((n,g)=>n+g.total,0);
+  const selected=specificN>=10?specific:all;
+  const total=selected.reduce((n,g)=>n+g.total,0);
+  if(total<5)return null;
+  const counts={};
+  selected.forEach(g=>Object.entries(g.works).forEach(([id,n])=>counts[id]=(counts[id]||0)+n));
+  return {total,brandSpecific:specificN>=10,counts};
+}
+function experienceRank(list,context){
+  if(!context || context.total<10)return list.slice();
+  const score=id=>Object.entries(context.counts).reduce((n,[cat,count])=>
+    REPAIR_EXPERIENCE.categories[cat].causes.includes(id)&&count>=3?n+count:n,0);
+  // History only breaks ties within an existing expert priority; it cannot
+  // add a diagnosis or override observations. Recharge/circuit records are
+  // confirmed historical leaks by the owner's definition, not current proof.
+  const buckets={};
+  list.forEach((ref,i)=>{const k=ref.ch||'low';(buckets[k]||(buckets[k]=[])).push({ref,i,score:score(ref.id)});});
+  Object.values(buckets).forEach(b=>b.sort((a,b)=>b.score-a.score||a.i-b.i));
+  return list.map(ref=>buckets[ref.ch||'low'].shift().ref);
+}
+function needsMotorRelayCheck(result){
+  if(!['no_start','not_cooling','clicks'].includes(state.flowId))return false;
+  const ids=['thermostat','control_board','start_relay','compressor_windings','compressor_seized','compressor_worn','freon_leak_full','freon_leak_partial','capillary_block'];
+  return (result.causes||[]).some(c=>ids.includes(c.id));
+}
+function checkedFaultResult(){
+  const motor=state.vars.motor_check==='fault', relay=state.vars.relay_check==='fault';
+  return motor&&relay?'R_checked_both':motor?'R_checked_motor':relay?'R_checked_relay':null;
+}
+function askMotorRelayCheck(done){
+  const session=startTok;
+  function ask(field,question,hint,options){
+    const box=el('<div></div>');
+    box.appendChild(el('<div class="q">'+esc(question)+'</div>'));
+    box.appendChild(el('<div class="hint">'+esc(hint)+'</div>'));
+    const chips=el('<div class="chips"></div>');
+    let answered=false;
+    function accept(option,fromText){
+      if(answered||session!==startTok)return;
+      answered=true; disableChips(chips); state.inputCb=null;
+      if(!fromText)addUser(option[0]);
+      state.vars[field]=option[1];
+      state.answers.push([question,option[0]]);
+      if((field==='motor_check' && option[1]==='inverter') ||
+         (field==='relay_check' && option[1]==='absent' && state.vars.motor_type!=='inverter')){
+        state.vars.motor_type='inverter';
+        delete state.vars.motor_check;
+        state.vars.relay_check='absent';
+      }
+      next();
+    }
+    options.forEach(option=>{const b=el('<button class="chip">'+esc(option[0])+'</button>');b.onclick=()=>accept(option,false);chips.appendChild(b);});
+    box.appendChild(chips);
+    function textAnswer(text){
+      if(session!==startTok)return;
+      const s=text.toLowerCase().replace(/ё/g,'е');
+      let value=/не провер|не знаю|не уверен/.test(s)?'unknown':/инвертор|нет п.?з|не предусмотр/.test(s)?(field==='motor_check'?'inverter':'absent'):/неисправ|не исправ/.test(s)?'fault':/исправ|проверен.*работает/.test(s)?'ok':null;
+      const option=options.find(o=>o[1]===value);
+      if(option)accept(option,true);
+      else {state.inputCb=textAnswer;botSay('Уточните результат кнопкой: исправен, неисправен или не проверен.');}
+    }
+    state.inputCb=textAnswer;
+    botSay(box);
+  }
+  function next(){
+    if(!state.vars.motor_check){
+      if(state.vars.motor_type==='inverter'){
+        ask('motor_check','Проверьте инверторный мотор-компрессор джигой. Какой результат?',
+          'Джига — специальное устройство для проверки инверторных моторов. Зафиксируйте результат проверки совместимой джигой по инструкции устройства и конкретного компрессора.',
+          [['Джигой проверен — исправен','ok'],['Джигой проверен — неисправен','fault'],['Джигой ещё не проверен','unknown']]);
+        return;
+      }
+      ask('motor_check','Проверили исправность мотора-компрессора?',
+        'Обычный компрессор: проверьте обмотки и изоляцию при отключённом питании, затем запуск и производительность по методике модели. Сам факт гула не подтверждает исправность. На двухмоторном проверяйте компрессор проблемной камеры; при жалобе на обе — оба. Инверторный мотор нужно проверить джигой — выберите отдельный вариант ниже.',
+        [['Мотор проверен — исправен','ok'],['Мотор проверен — неисправен','fault'],['Мотор ещё не проверен','unknown'],['Инверторный мотор — проверка джигой','inverter']]);
+    } else if(!state.vars.relay_check){
+      ask('relay_check','Проверили пускозащитное реле (п/з)?',
+        'При отключённом питании проверьте родное п/з по схеме модели. Для обычного компрессора используйте совместимое заведомо исправное реле для проверки запуска. Неисправность мотора и п/з отмечайте отдельно.',
+        [['П/з проверено — исправно','ok'],['П/з проверено — неисправно','fault'],['П/з ещё не проверено','unknown'],['П/з не предусмотрено — инвертор','absent']]);
+    } else done();
+  }
+  next();
+}
+function filterCheckedCauses(list){
+  return list.filter(ref=>{
+    if(state.vars.motor_check==='ok' && ['compressor_windings','compressor_seized','compressor_worn'].includes(ref.id))return false;
+    if(['ok','absent'].includes(state.vars.relay_check) && ref.id==='start_relay')return false;
+    return true;
+  });
+}
+
+/* END REPAIR EXPERIENCE */
+
 const state = {flowId:null, nodeId:null, vars:{}, answers:[], symptom:"", busy:false};
 
 const chat = document.getElementById("chat");
@@ -4791,6 +4959,13 @@ function disableChips(container){
 
 /* вопрос узла */
 function askNode(nodeId){
+  if(state.flowId === "no_start" && nodeId === "motor_relay_check"){
+    askMotorRelayCheck(function(){
+      const fault = checkedFaultResult();
+      if(fault) showResult(fault); else askNode("display");
+    });
+    return;
+  }
   const flow = KB.flows[state.flowId];
   const node = flow && flow.nodes[nodeId];
   if(!node){ botSay("⚠️ Узел «"+esc(nodeId)+"» не найден в сценарии — проверьте его в редакторе базы знаний."); return; }
@@ -5050,6 +5225,10 @@ function causeAllowed(ref){
 function showResult(resId){
   const r = KB.results[resId];
   if(!r){ botSay("⚠️ Результат «"+esc(resId)+"» не найден — проверьте базу знаний в редакторе."); return; }
+  if(needsMotorRelayCheck(r) && (!state.vars.motor_check || !state.vars.relay_check)){
+    askMotorRelayCheck(function(){ showResult(checkedFaultResult() || resId); });
+    return;
+  }
   if(!state._logged){ state._logged = true; fdLog(r); }
   /* механика + один мотор + не включается: кандидаты по типу системы */
   let causeList = r.causes || [];
@@ -5076,16 +5255,20 @@ function showResult(resId){
     }
   }
   causeList = causeList.filter(function(ref){ return causeAllowed(ref); });
-  if(state.vars.motor_ok === "1"){
-    causeList = causeList.filter(function(ref){ return ref.id !== "compressor_windings" && ref.id !== "start_relay"; });
-  }
+  causeList = filterCheckedCauses(causeList);
+  const experience = experienceContext();
+  causeList = experienceRank(causeList, experience);
+  state._lastCauses = causeList;
   const wrap = el("<div></div>");
+  if(state.vars.motor_check === "unknown" || state.vars.relay_check === "unknown"){
+    wrap.appendChild(el('<div class="hint">Мотор или п/з ещё не проверены. Сначала выполните отмеченные проверки; исправность этих узлов пока не подтверждена.</div>'));
+  }
   wrap.appendChild(el('<div class="res-intro"><strong>🔎 '+esc(r.t)+"</strong><br>"+esc(r.intro||"")+"</div>"));
   if(resId === "R_thermostat_no_start" && state.vars.control === "mechanic"){
-    wrap.appendChild(el('<div class="ed-note" style="margin-top:8px">ℹ️ Управление механическое — версии «датчик» и «модуль» отпадают: термостат, мотор или пуско-защитное реле (п.з).</div>'));
+    wrap.appendChild(el('<div class="ed-note" style="margin-top:8px">ℹ️ Управление механическое — версии «датчик» и «модуль» отпадают. Проверяйте оставшиеся версии с учётом результатов проверки мотора и п/з.</div>'));
   }
   if(state.vars.compressor === "2" && (resId === "R_click" || resId === "R_thermostat_no_start" || resId === "R_control_no_start" || resId === "R_no_power_internal" || resId === "R_blinking_module")){
-    wrap.appendChild(el('<div class="ed-note" style="margin-top:8px">ℹ️ Двухмоторный: если мёртв только контур ХК (морозилка работает) — кандидаты коротким списком: мотор ХК (пусковое реле) или термостат/датчик ХК.</div>'));
+    wrap.appendChild(el('<div class="ed-note" style="margin-top:8px">ℹ️ Двухмоторный: если мёртв только контур ХК (морозилка работает) — проверки относятся к мотору, п/з и цепи управления именно холодильной камеры. Учитывайте уже подтверждённую исправность узлов.</div>'));
   }
   if(state.vars.compressor === "2" && (resId === "R_cap_hk" || resId === "R_dry_hk" || resId === "R_partial_leak")){
     wrap.appendChild(el('<div class="ed-note" style="margin-top:8px">ℹ️ По опросу холодильник двухкомпрессорный: проблема локализована в контуре холодильной камеры — проверяйте его испаритель, капилляр и собственный термостат/датчик отдельно от морозильного контура.</div>'));
@@ -5123,7 +5306,7 @@ function showDiagCard(r){
     txt += "— " + pair[0] + "\n  Ответ: " + pair[1] + "\n";
   });
   txt += "\nПредварительные версии:\n";
-  (r.causes||[]).forEach(function(c, i){
+  (state._lastCauses || r.causes || []).forEach(function(c, i){
     const cc = KB.causes[c.id];
     txt += (i+1) + ". " + (cc ? cc.t : c.id) + "\n";
   });
@@ -5188,7 +5371,7 @@ function symptomMenu(){
 }
 
 function startNew(){
-  state.flowId = null; state.nodeId = null; state.vars = {}; state.answers = []; state.symptom = ""; state.inputCb = null; state._logged = false; startTok++;
+  state.flowId = null; state.nodeId = null; state.vars = {}; state.answers = []; state._lastCauses = null; state.symptom = ""; state.inputCb = null; state._logged = false; startTok++;
   botSay("Начинаем новую диагностику.", null, 300);
   setTimeout(function(){ botSay(symptomMenu()); }, 500);
 }
@@ -5199,7 +5382,7 @@ function startFlowVariant(fid, vi, chips){
   const v = KB.flows[fid].variants[vi];
   state.flowId = fid;
   state.symptom = v.label;
-  state.answers = [];
+  state.answers = []; state._lastCauses = null;
   state.inputCb = null;
   state.vars = { complaint: v.vars.complaint };
   const wrap = el("<div></div>");
@@ -5223,7 +5406,7 @@ function startFlow(flowId, chips){
   if(chips) disableChips(chips);
   state.flowId = flowId;
   state.symptom = KB.flows[flowId].symptom;
-  state.answers = [];
+  state.answers = []; state._lastCauses = null;
   state.vars = {};
   state.inputCb = null;
   const wrap = el("<div></div>");
